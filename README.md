@@ -6,6 +6,19 @@ Application Android **à usage personnel** pour noter les bières et les whiskie
 
 Pas de réseau social, pas de compte : un carnet perso, rapide à remplir, qui fonctionne hors-ligne.
 
+## Aperçu
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/captures/degustations.png" width="200" alt="Écran Dégustations, vide"><br><sub>Dégustations</sub></td>
+    <td align="center"><img src="docs/captures/carnet.png" width="200" alt="Écran Carnet avec les filtres Tout, Whisky, Bière"><br><sub>Carnet</sub></td>
+    <td align="center"><img src="docs/captures/cave.png" width="200" alt="Écran Cave avec les onglets En stock, À acheter, Finies"><br><sub>Cave</sub></td>
+    <td align="center"><img src="docs/captures/reglages.png" width="200" alt="Réglages : sauvegarde, code-barres, version 1.0.0"><br><sub>Réglages</sub></td>
+  </tr>
+</table>
+
+<sub>Version 1.0.0, thème sombre « cave à la lueur » (voir [docs/DESIGN.md](docs/DESIGN.md)).</sub>
+
 ## Principes
 
 - **Saisie en moins de 30 secondes** : sinon je ne noterai pas au bar ou en salon.
