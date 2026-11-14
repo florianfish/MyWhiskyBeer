@@ -5,17 +5,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
-import fr.florianfish.mywhiskybeer.data.local.AromaSeed
 import fr.florianfish.mywhiskybeer.data.local.dao.CellarDao
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
 import fr.florianfish.mywhiskybeer.data.local.dao.TastingDao
-import fr.florianfish.mywhiskybeer.data.local.entity.AromaIntensity
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarItemEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarStatus
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingWithProduct
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
+import fr.florianfish.mywhiskybeer.domain.aromaProfile
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductDetailRoute
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -110,19 +109,4 @@ class ProductDetailViewModel @Inject constructor(
             _deleted.send(Unit)
         }
     }
-}
-
-/**
- * Profil aromatique : somme des intensités par famille, ramenée à 0..1
- * par rapport à la famille la plus marquée.
- */
-internal fun aromaProfile(type: ProductType, intensities: List<AromaIntensity>): List<Pair<String, Float>> {
-    if (intensities.isEmpty()) return emptyList()
-    val families = when (type) {
-        ProductType.WHISKY -> AromaSeed.whisky.keys
-        ProductType.BEER -> AromaSeed.beer.keys
-    }
-    val totals = intensities.groupBy { it.aroma.family }.mapValues { (_, list) -> list.sumOf { it.intensity } }
-    val max = totals.values.maxOrNull()?.takeIf { it > 0 } ?: return emptyList()
-    return families.map { it to (totals[it] ?: 0).toFloat() / max }
 }

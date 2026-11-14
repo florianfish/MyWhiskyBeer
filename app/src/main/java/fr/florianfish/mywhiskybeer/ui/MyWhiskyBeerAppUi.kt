@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
@@ -37,10 +38,12 @@ import fr.florianfish.mywhiskybeer.ui.navigation.HomeRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductDetailRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.SettingsRoute
+import fr.florianfish.mywhiskybeer.ui.navigation.StatsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import fr.florianfish.mywhiskybeer.ui.product.ProductDetailScreen
 import fr.florianfish.mywhiskybeer.ui.products.ProductsScreen
 import fr.florianfish.mywhiskybeer.ui.settings.SettingsScreen
+import fr.florianfish.mywhiskybeer.ui.stats.StatsScreen
 import fr.florianfish.mywhiskybeer.ui.tasting.TastingEditScreen
 import kotlin.reflect.KClass
 
@@ -50,6 +53,7 @@ private val topLevels = listOf(
     TopLevel(HomeRoute, HomeRoute::class, "Dégustations", Icons.Outlined.Home),
     TopLevel(ProductsRoute, ProductsRoute::class, "Carnet", Icons.AutoMirrored.Outlined.MenuBook),
     TopLevel(CellarRoute, CellarRoute::class, "Cave", Icons.Outlined.Inventory2),
+    TopLevel(StatsRoute, StatsRoute::class, "Stats", Icons.Outlined.Insights),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,6 +134,12 @@ fun MyWhiskyBeerAppUi() {
                 CellarScreen(
                     onProductClick = { navController.navigate(ProductDetailRoute(it)) },
                     onAddBottle = { wishlist -> navController.navigate(BottleEditRoute(wishlist = wishlist)) },
+                    modifier = Modifier.padding(padding),
+                )
+            }
+            composable<StatsRoute> {
+                StatsScreen(
+                    onProductClick = { navController.navigate(ProductDetailRoute(it)) },
                     modifier = Modifier.padding(padding),
                 )
             }
