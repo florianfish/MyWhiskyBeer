@@ -130,16 +130,16 @@ fun MyWhiskyBeerAppUi() {
                     modifier = Modifier.padding(padding),
                 )
             }
+            composable<StatsRoute> {
+                StatsScreen(
+                    onProductClick = { navController.navigate(ProductDetailRoute(it)) },
+                    modifier = Modifier.padding(padding),
+                )
+            }
             composable<CellarRoute> {
                 CellarScreen(
                     onProductClick = { navController.navigate(ProductDetailRoute(it)) },
                     onAddBottle = { wishlist -> navController.navigate(BottleEditRoute(wishlist = wishlist)) },
-                    modifier = Modifier.padding(padding),
-                )
-            }
-            composable<StatsRoute> {
-                StatsScreen(
-                    onProductClick = { navController.navigate(ProductDetailRoute(it)) },
                     modifier = Modifier.padding(padding),
                 )
             }
