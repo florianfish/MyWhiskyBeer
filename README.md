@@ -30,6 +30,33 @@ Dernier APK de debug (remplacé à chaque push sur `main`) : [MyWhiskyBeer-debug
 
 La CI utilise les workflows partagés de [Forge-Apk](https://github.com/florianfish/Forge-Apk).
 
+## Publier une version
+
+**Depuis le téléphone ou le navigateur** : onglet **Actions** → workflow **Release APK** → **Run workflow** (branche `main`) → choisir le type de version → **Run workflow**. Le workflow prend le dernier tag (ex. `v1.0.0`), calcule le suivant (**mineure** `v1.1.0`, **correctif** `v1.0.1`, **majeure** `v2.0.0`), compile l'APK signé et publie la release `MyWhiskyBeer-vX.Y.Z.apk` avec ses notes.
+
+Autres possibilités : pousser un tag (`git tag v1.1.0 && git push origin v1.1.0` ; il doit commencer par `v`), ou créer une release dans l'interface GitHub avec un nouveau tag `v…` (l'APK y est ajouté).
+
+- Nom de version = tag sans le `v` ; numéro de version (`versionCode`) = numéro d'exécution du workflow, toujours croissant.
+- En cas d'échec : **Re-run jobs** sur l'exécution.
+- La CI est celle de [Forge-Apk](https://github.com/florianfish/Forge-Apk) (`android-release.yml`).
+
+### Clé de signature
+
+Toutes les releases doivent être signées avec **la même clé**, sinon Android refuse la mise à jour (désinstallation obligatoire, données perdues). La clé (`mywhiskybeer-release.jks`, alias `mywhiskybeer`) et son mot de passe sont conservés hors de GitHub.
+
+Secrets du dépôt (**Settings → Secrets and variables → Actions**) :
+
+| Secret | Valeur |
+|---|---|
+| `KEYSTORE_BASE64` | le fichier `.jks` encodé en base64, sur une ligne |
+| `KEYSTORE_PASSWORD` | mot de passe du keystore |
+| `KEY_ALIAS` | `mywhiskybeer` |
+| `KEY_PASSWORD` | mot de passe de la clé (le même) |
+
+### Passer de l'appli de debug à la release
+
+Les deux s'installent côte à côte (l'appli de debug a l'identifiant `….debug`) et ont des données séparées. Pour reprendre ses notes : **Réglages → Sauvegarder** dans l'appli de debug, puis **Réglages → Restaurer** dans l'appli release.
+
 ## Compiler
 
 Ouvrir le projet dans Android Studio (JDK 17), ou en ligne de commande :
