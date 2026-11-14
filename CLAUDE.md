@@ -11,8 +11,9 @@ MyWhiskyBeer: personal Android app to rate beers and whiskies (Kotlin, Jetpack C
 - Gradle wrapper is committed (8.14.3): `./gradlew assembleDebug testDebugUnitTest`. JDK 17, compileSdk/targetSdk 35, minSdk 26.
 - Versions live in `gradle/libs.versions.toml` (AGP 8.7, Kotlin 2.1 with the Compose compiler plugin, KSP for Room and Hilt). Bump AGP/Kotlin/KSP/Hilt together: KSP's version is tied to Kotlin's.
 - Room schemas are exported to `app/schemas/` (generated at build). Any entity change must bump `AppDatabase.version` and add a migration — users' notes must never be wiped.
-- CI (`.github/workflows/build.yml`) runs `assembleDebug testDebugUnitTest` on every push to `main` and every PR, uploads the APK as the `mywhiskybeer-apk` artifact, and on a PR posts (then edits) a comment linking to it.
-- Releases (`.github/workflows/release.yml`), same procedure as MyRadioPlayer: push a `v*` tag, or run the workflow manually from `main` with a `type` input (`mineure`/`correctif`/`majeure`). Signing comes from repo secrets `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`; `versionName` = tag without `v`, `versionCode` = run number, read from env vars in `app/build.gradle.kts`.
+- CI workflows are thin callers of the shared reusable workflows in the public repo `florianfish/Forge-Apk` (`android-build.yml`, `android-release.yml`, called `@main`). Change CI behaviour there, not here.
+- `build.yml` runs `assembleDebug testDebugUnitTest` on every push to `main` and every PR, uploads the APK as the `MyWhiskyBeer-apk` artifact, comments the link on PRs, and on `main` replaces the `debug` pre-release: always-current APK at `https://github.com/florianfish/MyWhiskyBeer/releases/download/debug/MyWhiskyBeer-debug.apk`.
+- Releases (`release.yml`), same procedure as MyRadioPlayer: push a `v*` tag, or run the workflow manually from `main` with a `type` input (`mineure`/`correctif`/`majeure`). Signing comes from repo secrets `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`; `versionName` = tag without `v`, `versionCode` = run number, read from env vars in `app/build.gradle.kts`.
 - Debug builds use the `.debug` applicationId suffix, so a debug APK installs next to the release one (separate data).
 
 ## Architecture
