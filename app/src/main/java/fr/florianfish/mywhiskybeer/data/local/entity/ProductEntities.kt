@@ -91,3 +91,17 @@ data class ProductWithDetails(
     @Relation(parentColumn = "id", entityColumn = "productId")
     val whisky: WhiskyDetailsEntity?,
 )
+
+/** Produit avec ses statistiques de dégustation, pour la liste du carnet. */
+data class ProductSummary(
+    @Embedded val product: ProductEntity,
+    @Relation(parentColumn = "id", entityColumn = "productId")
+    val beer: BeerDetailsEntity?,
+    @Relation(parentColumn = "id", entityColumn = "productId")
+    val whisky: WhiskyDetailsEntity?,
+    /** Note moyenne sur 100, null sans dégustation. */
+    val avgRating: Double?,
+    /** Date de la dernière dégustation, null sans dégustation. */
+    val lastTasted: Long?,
+    val tastingCount: Int,
+)

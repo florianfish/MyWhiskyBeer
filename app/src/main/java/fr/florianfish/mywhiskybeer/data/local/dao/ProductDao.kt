@@ -9,6 +9,7 @@ import androidx.room.Update
 import androidx.room.Upsert
 import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductEntity
+import fr.florianfish.mywhiskybeer.data.local.entity.ProductSummary
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.local.entity.WhiskyDetailsEntity
@@ -53,6 +54,17 @@ abstract class ProductDao {
     @Transaction
     @Query("SELECT * FROM product ORDER BY name COLLATE NOCASE")
     abstract fun observeAll(): Flow<List<ProductWithDetails>>
+
+    /** Tous les produits avec note moyenne, dernière dégustation et nombre de dégustations (carnet). */
+    @Transaction
+    @Query(
+        """
+        SELECT p.*, AVG(t.rating) AS avgRating, MAX(t.date) AS lastTasted, COUNT(t.id) AS tastingCount
+        FROM product p LEFT JOIN tasting t ON t.productId = p.id
+        GROUP BY p.id
+        """,
+    )
+    abstract fun observeSummaries(): Flow<List<ProductSummary>>
 
     @Transaction
     @Query("SELECT * FROM product WHERE type = :type ORDER BY name COLLATE NOCASE")

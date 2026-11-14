@@ -2,6 +2,7 @@ package fr.florianfish.mywhiskybeer.data.settings
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import fr.florianfish.mywhiskybeer.domain.ProductSort
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +25,19 @@ class AppSettings @Inject constructor(
         _openFoodFactsEnabled.value = enabled
     }
 
+    private val _productSort = MutableStateFlow(
+        prefs.getString(KEY_SORT, null)?.let { runCatching { ProductSort.valueOf(it) }.getOrNull() } ?: ProductSort.NAME,
+    )
+    /** Tri du carnet, conservé d'une session à l'autre. */
+    val productSort: StateFlow<ProductSort> = _productSort.asStateFlow()
+
+    fun setProductSort(sort: ProductSort) {
+        prefs.edit().putString(KEY_SORT, sort.name).apply()
+        _productSort.value = sort
+    }
+
     private companion object {
         const val KEY_OFF = "open_food_facts"
+        const val KEY_SORT = "product_sort"
     }
 }
