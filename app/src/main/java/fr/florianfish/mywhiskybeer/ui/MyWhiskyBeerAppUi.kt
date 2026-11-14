@@ -38,13 +38,13 @@ import fr.florianfish.mywhiskybeer.ui.navigation.HomeRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductDetailRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.SettingsRoute
-import fr.florianfish.mywhiskybeer.ui.navigation.StatsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import fr.florianfish.mywhiskybeer.ui.product.ProductDetailScreen
 import fr.florianfish.mywhiskybeer.ui.products.ProductsScreen
 import fr.florianfish.mywhiskybeer.ui.settings.SettingsScreen
-import fr.florianfish.mywhiskybeer.ui.stats.StatsScreen
 import fr.florianfish.mywhiskybeer.ui.tasting.TastingEditScreen
+import fr.florianfish.mywhiskybeer.ui.navigation.StatsRoute
+import fr.florianfish.mywhiskybeer.ui.stats.StatsScreen
 import kotlin.reflect.KClass
 
 private data class TopLevel(val route: Any, val routeClass: KClass<*>, val label: String, val icon: ImageVector)
