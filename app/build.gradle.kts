@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
     implementation(libs.androidx.exifinterface)
+    implementation(libs.mlkit.text.recognition) // OCR des étiquettes, modèle embarqué (hors-ligne)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

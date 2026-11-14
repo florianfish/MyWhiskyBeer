@@ -8,18 +8,18 @@ import androidx.navigation.toRoute
 import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import fr.florianfish.mywhiskybeer.data.local.AppDatabase
+import fr.florianfish.mywhiskybeer.data.local.ProductWriter
 import fr.florianfish.mywhiskybeer.data.local.dao.AromaDao
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
 import fr.florianfish.mywhiskybeer.data.local.dao.TastingDao
 import fr.florianfish.mywhiskybeer.data.local.entity.AromaEntity
-import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
-import fr.florianfish.mywhiskybeer.data.local.entity.PeatLevel
-import fr.florianfish.mywhiskybeer.data.local.entity.ProductEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingEntity
-import fr.florianfish.mywhiskybeer.data.local.entity.WhiskyDetailsEntity
+import fr.florianfish.mywhiskybeer.data.ocr.LabelScanner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
+import fr.florianfish.mywhiskybeer.domain.ProductForm
+import fr.florianfish.mywhiskybeer.domain.blankToNull
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -38,27 +38,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
-
-/** Champs du produit, saisis sous forme de texte (convertis à l'enregistrement). */
-data class ProductForm(
-    val type: ProductType = ProductType.WHISKY,
-    val name: String = "",
-    val producer: String = "",
-    val country: String = "",
-    val region: String = "",
-    val abv: String = "",
-    // Bière
-    val style: String = "",
-    val ibu: String = "",
-    val color: String = "",
-    // Whisky
-    val category: String = "",
-    val age: String = "",
-    val caskType: String = "",
-    val peat: PeatLevel = PeatLevel.NONE,
-    val caskStrength: Boolean = false,
-)
 
 data class TastingForm(
     val rating: Int = 70,
@@ -80,6 +61,9 @@ data class TastingEditState(
     val tasting: TastingForm = TastingForm(),
     val saving: Boolean = false,
     val photoLoading: Boolean = false,
+    val scanning: Boolean = false,
+    /** Lignes lues sur l'étiquette, proposées pour remplir le nom ou le producteur. */
+    val scannedLines: List<String> = emptyList(),
 ) {
     val type: ProductType get() = existing?.product?.type ?: product.type
     val canSave: Boolean get() = !saving && (existing != null || product.name.isNotBlank())
@@ -93,7 +77,9 @@ class TastingEditViewModel @Inject constructor(
     private val productDao: ProductDao,
     private val tastingDao: TastingDao,
     aromaDao: AromaDao,
+    private val productWriter: ProductWriter,
     private val photoStore: PhotoStore,
+    private val labelScanner: LabelScanner,
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<TastingEditRoute>()
@@ -114,12 +100,6 @@ class TastingEditViewModel @Inject constructor(
         .debounce(250)
         .flatMapLatest { query -> if (query.length < 2) flowOf(emptyList()) else productDao.search(query) }
         .map { it.take(5) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    val producers: StateFlow<List<String>> = _state
-        .map { it.type }
-        .distinctUntilChanged()
-        .flatMapLatest { productDao.observeProducers(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _saved = Channel<Long>(Channel.BUFFERED)
@@ -160,6 +140,7 @@ class TastingEditViewModel @Inject constructor(
             val typeChanged = s.type != product.product.type
             s.copy(
                 existing = product,
+                scannedLines = emptyList(),
                 tasting = if (typeChanged) s.tasting.copy(aromas = emptyMap()) else s.tasting,
             )
         }
@@ -188,6 +169,23 @@ class TastingEditViewModel @Inject constructor(
     fun onPhotoPicked(uri: Uri) = importPhoto { photoStore.import(uri) }
 
     fun onPhotoCaptured() = importPhoto { photoStore.importCapture() }
+
+    /** Photo de l'étiquette : devient la photo de la dégustation et pré-remplit le produit. */
+    fun onLabelCaptured() {
+        viewModelScope.launch {
+            _state.update { it.copy(scanning = true) }
+            val scan = labelScanner.scanCapture()
+            if (scan != null) {
+                importedPhotos += scan.photoPath
+                val old = _state.value.tasting.photoPath
+                updateProduct { it.withGuess(scan.guess) }
+                updateTasting { it.copy(photoPath = scan.photoPath) }
+                _state.update { it.copy(scannedLines = scan.lines.map { l -> l.text }) }
+                discard(old)
+            }
+            _state.update { it.copy(scanning = false) }
+        }
+    }
 
     fun removePhoto() {
         val old = _state.value.tasting.photoPath
@@ -223,11 +221,13 @@ class TastingEditViewModel @Inject constructor(
         viewModelScope.launch {
             val t = s.tasting
             val productId = db.withTransaction {
-                val id = s.existing?.product?.id ?: insertProduct(s.product, t.photoPath)
-                // Le produit prend la photo de sa première dégustation
-                val existingProduct = s.existing?.product
-                if (existingProduct != null && existingProduct.photoPath == null && t.photoPath != null) {
-                    productDao.updateProduct(existingProduct.copy(photoPath = t.photoPath))
+                val existing = s.existing?.product
+                val id = if (existing != null) {
+                    // Le produit prend la photo de sa première dégustation
+                    productWriter.setPhotoIfMissing(existing, t.photoPath)
+                    existing.id
+                } else {
+                    productWriter.insert(s.product, t.photoPath)
                 }
                 tastingDao.save(
                     TastingEntity(
@@ -250,47 +250,8 @@ class TastingEditViewModel @Inject constructor(
         }
     }
 
-    private suspend fun insertProduct(form: ProductForm, photoPath: String?): Long {
-        val product = ProductEntity(
-            type = form.type,
-            name = form.name.trim(),
-            producer = form.producer.blankToNull(),
-            country = form.country.blankToNull(),
-            region = form.region.blankToNull(),
-            abv = form.abv.toDecimalOrNull(),
-            photoPath = photoPath,
-        )
-        return when (form.type) {
-            ProductType.BEER -> productDao.insertBeer(
-                product,
-                BeerDetailsEntity(
-                    productId = 0,
-                    style = form.style.blankToNull(),
-                    ibu = form.ibu.trim().toIntOrNull(),
-                    color = form.color.blankToNull(),
-                ),
-            )
-            ProductType.WHISKY -> productDao.insertWhisky(
-                product,
-                WhiskyDetailsEntity(
-                    productId = 0,
-                    category = form.category.blankToNull(),
-                    age = form.age.trim().toIntOrNull(),
-                    caskType = form.caskType.blankToNull(),
-                    peat = form.peat,
-                    caskStrength = form.caskStrength,
-                ),
-            )
-        }
-    }
-
     override fun onCleared() {
         // Saisie abandonnée : on ne laisse pas traîner les photos importées
-        if (!committed) importedPhotos.forEach { path -> java.io.File(path).delete() }
+        if (!committed) importedPhotos.forEach { path -> File(path).delete() }
     }
 }
-
-private fun String.blankToNull(): String? = trim().ifEmpty { null }
-
-/** Accepte la virgule française : « 46,3 » → 46.3. */
-internal fun String.toDecimalOrNull(): Double? = trim().replace(',', '.').toDoubleOrNull()
