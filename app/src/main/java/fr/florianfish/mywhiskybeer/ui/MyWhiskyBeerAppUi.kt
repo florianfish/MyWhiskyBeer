@@ -5,10 +5,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -34,9 +36,11 @@ import fr.florianfish.mywhiskybeer.ui.navigation.CellarRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.HomeRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductDetailRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductsRoute
+import fr.florianfish.mywhiskybeer.ui.navigation.SettingsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import fr.florianfish.mywhiskybeer.ui.product.ProductDetailScreen
 import fr.florianfish.mywhiskybeer.ui.products.ProductsScreen
+import fr.florianfish.mywhiskybeer.ui.settings.SettingsScreen
 import fr.florianfish.mywhiskybeer.ui.tasting.TastingEditScreen
 import kotlin.reflect.KClass
 
@@ -61,6 +65,11 @@ fun MyWhiskyBeerAppUi() {
             if (current != null) {
                 TopAppBar(
                     title = { Text(current.label, style = MaterialTheme.typography.headlineSmall) },
+                    actions = {
+                        IconButton(onClick = { navController.navigate(SettingsRoute) }) {
+                            Icon(Icons.Outlined.Settings, contentDescription = "Réglages")
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 )
             }
@@ -140,6 +149,9 @@ fun MyWhiskyBeerAppUi() {
                     onTasteAgain = { navController.navigate(TastingEditRoute(it)) },
                     onEditStock = { navController.navigate(BottleEditRoute(productId = it)) },
                 )
+            }
+            composable<SettingsRoute> {
+                SettingsScreen(onBack = { navController.popBackStack() })
             }
             composable<BottleEditRoute> {
                 BottleEditScreen(onClose = { navController.popBackStack() })
