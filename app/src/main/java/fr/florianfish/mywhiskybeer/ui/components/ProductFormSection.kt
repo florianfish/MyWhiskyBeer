@@ -1,5 +1,6 @@
 package fr.florianfish.mywhiskybeer.ui.components
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -61,11 +63,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import fr.florianfish.mywhiskybeer.data.local.entity.PeatLevel
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
@@ -105,8 +111,12 @@ fun ProductFormSection(
     onLabelCaptured: () -> Unit,
     onFormChange: ((ProductForm) -> ProductForm) -> Unit,
     onSuggestionClick: (ProductWithDetails) -> Unit,
+    barcodeBusy: Boolean,
+    onBarcode: (String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    var scannerError by remember { mutableStateOf<String?>(null) }
     val scanLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
         if (ok) onLabelCaptured()
     }
@@ -116,20 +126,39 @@ fun ProductFormSection(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        FilledTonalButton(
-            onClick = { scanLauncher.launch(newCaptureUri()) },
-            enabled = !scanning,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-        ) {
-            if (scanning) {
-                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                Spacer(Modifier.size(12.dp))
-                Text("Lecture de l'étiquette…")
-            } else {
-                Icon(Icons.Outlined.DocumentScanner, contentDescription = null)
-                Spacer(Modifier.size(12.dp))
-                Text("Scanner l'étiquette")
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            FilledTonalButton(
+                onClick = { scanLauncher.launch(newCaptureUri()) },
+                enabled = !scanning && !barcodeBusy,
+                modifier = Modifier.weight(1f).height(52.dp),
+            ) {
+                if (scanning) {
+                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    Icon(Icons.Outlined.DocumentScanner, contentDescription = null)
+                }
+                Spacer(Modifier.size(8.dp))
+                Text("Étiquette")
             }
+            FilledTonalButton(
+                onClick = {
+                    scannerError = null
+                    startBarcodeScan(context, onBarcode) { scannerError = it }
+                },
+                enabled = !scanning && !barcodeBusy,
+                modifier = Modifier.weight(1f).height(52.dp),
+            ) {
+                if (barcodeBusy) {
+                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    Icon(Icons.Outlined.QrCodeScanner, contentDescription = null)
+                }
+                Spacer(Modifier.size(8.dp))
+                Text("Code-barres")
+            }
+        }
+        scannerError?.let {
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         }
 
         if (scannedLines.isNotEmpty()) {
@@ -244,6 +273,7 @@ private fun ScannedLines(lines: List<String>, onFormChange: ((ProductForm) -> Pr
 @Composable
 private fun ProductDetailsFields(form: ProductForm, onFormChange: ((ProductForm) -> ProductForm) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        FormTextField(form.barcode, { v -> onFormChange { it.copy(barcode = v.filter(Char::isDigit)) } }, "Code-barres", keyboardType = KeyboardType.Number)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             FormTextField(form.country, { v -> onFormChange { it.copy(country = v) } }, "Pays", Modifier.weight(1f))
             FormTextField(form.region, { v -> onFormChange { it.copy(region = v) } }, "Région", Modifier.weight(1f))
@@ -369,4 +399,18 @@ fun FormTextField(
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, capitalization = capitalization),
         modifier = modifier.fillMaxWidth(),
     )
+}
+
+/**
+ * Ouvre le scanner de codes-barres de Google Play services (interface fournie, pas de permission caméra).
+ * Formats des bouteilles et canettes : EAN-13, EAN-8, UPC-A, UPC-E.
+ */
+private fun startBarcodeScan(context: Context, onBarcode: (String) -> Unit, onError: (String) -> Unit) {
+    val options = GmsBarcodeScannerOptions.Builder()
+        .setBarcodeFormats(Barcode.FORMAT_EAN_13, Barcode.FORMAT_EAN_8, Barcode.FORMAT_UPC_A, Barcode.FORMAT_UPC_E)
+        .enableAutoZoom()
+        .build()
+    GmsBarcodeScanning.getClient(context, options).startScan()
+        .addOnSuccessListener { barcode -> barcode.rawValue?.takeIf { it.isNotBlank() }?.let(onBarcode) }
+        .addOnFailureListener { onError("Scanner indisponible (services Google Play) : ${it.message ?: "erreur inconnue"}") }
 }

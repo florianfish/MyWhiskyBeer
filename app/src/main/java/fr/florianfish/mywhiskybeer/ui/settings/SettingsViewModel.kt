@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import fr.florianfish.mywhiskybeer.data.backup.BackupManager
 import fr.florianfish.mywhiskybeer.data.backup.BackupSummary
+import fr.florianfish.mywhiskybeer.data.settings.AppSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +29,13 @@ data class PendingRestore(val uri: Uri, val summary: BackupSummary)
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val backupManager: BackupManager,
+    private val appSettings: AppSettings,
 ) : ViewModel() {
+
+    /** Recherche des codes-barres inconnus sur Open Food Facts. */
+    val openFoodFacts: StateFlow<Boolean> = appSettings.openFoodFactsEnabled
+
+    fun setOpenFoodFacts(enabled: Boolean) = appSettings.setOpenFoodFactsEnabled(enabled)
 
     private val _state = MutableStateFlow(SettingsState(lastBackupAt = backupManager.lastBackupAt))
     val state: StateFlow<SettingsState> = _state.asStateFlow()

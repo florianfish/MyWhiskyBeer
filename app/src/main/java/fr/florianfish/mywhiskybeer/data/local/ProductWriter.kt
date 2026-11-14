@@ -22,6 +22,7 @@ class ProductWriter @Inject constructor(
             country = form.country.blankToNull(),
             region = form.region.blankToNull(),
             abv = form.abv.toDecimalOrNull(),
+            barcode = form.barcode.blankToNull(),
             photoPath = photoPath,
         )
         return when (form.type) {
@@ -45,6 +46,13 @@ class ProductWriter @Inject constructor(
                     caskStrength = form.caskStrength,
                 ),
             )
+        }
+    }
+
+    /** Associe un code-barres à un produit qui n'en a pas encore (scan d'un produit déjà connu par son nom). */
+    suspend fun setBarcodeIfMissing(product: ProductEntity, barcode: String) {
+        if (product.barcode == null && barcode.isNotBlank()) {
+            productDao.updateProduct(product.copy(barcode = barcode))
         }
     }
 
