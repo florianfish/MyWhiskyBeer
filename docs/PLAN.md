@@ -59,19 +59,20 @@ Arborescence par famille, différente pour bière et whisky :
 ## 3. Roadmap
 
 ### V1 — MVP
+- [x] CI GitHub Actions (build + tests, APK en artefact, release signée sur tag)
 - [x] Projet Android (Compose, Room, Hilt)
-- [ ] CRUD produits bière & whisky
-- [ ] Dégustation : note, nez/bouche/finale, commentaire, date, lieu
-- [ ] Sélection d'arômes depuis le référentiel
-- [ ] Photo depuis l'appareil photo ou la galerie
-- [ ] Liste filtrable + recherche texte
+- [x] Création de produits bière & whisky (modification et recherche texte à faire)
+- [x] Dégustation : note (curseur « verser »), nez/bouche/finale, commentaire, date, lieu
+- [x] Sélection d'arômes depuis le référentiel (roue avec intensités)
+- [x] Photo depuis l'appareil photo ou la galerie
+- [x] Liste filtrable par type (recherche texte à faire)
 - [ ] Export / import JSON (sauvegarde)
 
 ### V2 — Confort
 - [ ] Scan code-barres (ML Kit) + pré-remplissage depuis Open Food Facts (bières)
 - [ ] OCR de l'étiquette pour pré-remplir nom / degré / âge
-- [ ] Gestion de la cave et de la wishlist
-- [ ] Statistiques et profil aromatique (graphique radar)
+- [x] Gestion de la cave et de la wishlist
+- [ ] Statistiques globales (le radar par produit est fait)
 - [ ] Comparer deux dégustations côte à côte
 
 ### V3 — Bonus
