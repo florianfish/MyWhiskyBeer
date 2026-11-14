@@ -1,5 +1,6 @@
 package fr.florianfish.mywhiskybeer.data.local.entity
 
+import kotlinx.serialization.Serializable
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -21,6 +22,7 @@ import androidx.room.Relation
     ],
     indices = [Index("productId"), Index("date")],
 )
+@Serializable // sauvegarde (data/backup)
 data class TastingEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val productId: Long,

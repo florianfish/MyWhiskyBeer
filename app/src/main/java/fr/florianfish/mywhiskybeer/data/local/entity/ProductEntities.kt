@@ -1,5 +1,6 @@
 package fr.florianfish.mywhiskybeer.data.local.entity
 
+import kotlinx.serialization.Serializable
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
@@ -13,6 +14,7 @@ import androidx.room.Relation
     tableName = "product",
     indices = [Index("type"), Index("name"), Index("barcode")],
 )
+@Serializable // sauvegarde (data/backup)
 data class ProductEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val type: ProductType,
@@ -40,6 +42,7 @@ data class ProductEntity(
         ),
     ],
 )
+@Serializable // sauvegarde (data/backup)
 data class BeerDetailsEntity(
     @PrimaryKey val productId: Long,
     /** IPA, stout, lager, saison… */
@@ -62,6 +65,7 @@ data class BeerDetailsEntity(
         ),
     ],
 )
+@Serializable // sauvegarde (data/backup)
 data class WhiskyDetailsEntity(
     @PrimaryKey val productId: Long,
     /** Single malt, blended malt, blend, bourbon, rye… */

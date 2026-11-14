@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import fr.florianfish.mywhiskybeer.data.local.AppDatabase
 import fr.florianfish.mywhiskybeer.data.local.AromaSeed
 import fr.florianfish.mywhiskybeer.data.local.dao.AromaDao
+import fr.florianfish.mywhiskybeer.data.local.dao.BackupDao
 import fr.florianfish.mywhiskybeer.data.local.dao.CellarDao
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
 import fr.florianfish.mywhiskybeer.data.local.dao.TastingDao
@@ -31,4 +32,5 @@ object DatabaseModule {
     @Provides fun provideTastingDao(db: AppDatabase): TastingDao = db.tastingDao()
     @Provides fun provideAromaDao(db: AppDatabase): AromaDao = db.aromaDao()
     @Provides fun provideCellarDao(db: AppDatabase): CellarDao = db.cellarDao()
+    @Provides fun provideBackupDao(db: AppDatabase): BackupDao = db.backupDao()
 }

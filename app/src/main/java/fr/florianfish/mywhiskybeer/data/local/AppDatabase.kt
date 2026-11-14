@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.florianfish.mywhiskybeer.data.local.dao.AromaDao
+import fr.florianfish.mywhiskybeer.data.local.dao.BackupDao
 import fr.florianfish.mywhiskybeer.data.local.dao.CellarDao
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
 import fr.florianfish.mywhiskybeer.data.local.dao.TastingDao
@@ -36,6 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tastingDao(): TastingDao
     abstract fun aromaDao(): AromaDao
     abstract fun cellarDao(): CellarDao
+    abstract fun backupDao(): BackupDao
 
     companion object {
         const val NAME = "mywhiskybeer.db"
