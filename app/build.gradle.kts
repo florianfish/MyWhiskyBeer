@@ -107,6 +107,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.androidx.exifinterface)
     implementation(libs.mlkit.text.recognition) // OCR des étiquettes, modèle embarqué (hors-ligne)
+    implementation(libs.play.services.code.scanner) // codes-barres
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)

@@ -36,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -86,6 +87,23 @@ fun SettingsScreen(
                 onRestorePicked = viewModel::prepareRestore,
                 onDismissMessage = viewModel::dismissMessage,
             )
+
+            val openFoodFacts by viewModel.openFoodFacts.collectAsStateWithLifecycle()
+            SettingsCard("Code-barres") {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Chercher sur Open Food Facts", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Quand un code-barres scanné n'est pas dans ton carnet, l'appli interroge la base " +
+                                "collaborative Open Food Facts pour pré-remplir le produit. C'est son seul accès à internet : " +
+                                "seul le code-barres est envoyé.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(checked = openFoodFacts, onCheckedChange = viewModel::setOpenFoodFacts)
+                }
+            }
 
             SettingsCard("À propos") {
                 Row(verticalAlignment = Alignment.CenterVertically) {

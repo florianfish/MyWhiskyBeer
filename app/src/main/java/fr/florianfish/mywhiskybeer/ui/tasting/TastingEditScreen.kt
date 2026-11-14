@@ -98,7 +98,12 @@ fun TastingEditScreen(
                     onLabelCaptured = viewModel::onLabelCaptured,
                     onFormChange = viewModel::updateProduct,
                     onSuggestionClick = viewModel::selectExisting,
+                    barcodeBusy = state.barcodeBusy,
+                    onBarcode = viewModel::onBarcodeScanned,
                 )
+            }
+            state.barcodeMessage?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
             }
 
             PhotoSection(

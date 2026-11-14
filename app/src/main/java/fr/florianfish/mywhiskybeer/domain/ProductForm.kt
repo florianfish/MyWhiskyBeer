@@ -14,6 +14,8 @@ data class ProductForm(
     val country: String = "",
     val region: String = "",
     val abv: String = "",
+    /** Code-barres scanné (EAN), sert à retrouver le produit au prochain scan. */
+    val barcode: String = "",
     // Bière
     val style: String = "",
     val ibu: String = "",

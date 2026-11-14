@@ -116,7 +116,12 @@ fun BottleEditScreen(
                     onLabelCaptured = viewModel::onLabelCaptured,
                     onFormChange = viewModel::updateProduct,
                     onSuggestionClick = viewModel::selectExisting,
+                    barcodeBusy = state.barcodeBusy,
+                    onBarcode = viewModel::onBarcodeScanned,
                 )
+            }
+            state.barcodeMessage?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
             }
 
             // Photo : seulement pour un nouveau produit, ou un produit qui n'en a pas encore

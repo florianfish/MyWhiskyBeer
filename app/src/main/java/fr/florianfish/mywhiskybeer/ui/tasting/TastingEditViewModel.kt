@@ -16,6 +16,9 @@ import fr.florianfish.mywhiskybeer.data.local.entity.AromaEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingEntity
+import fr.florianfish.mywhiskybeer.data.barcode.BarcodeLookup
+import fr.florianfish.mywhiskybeer.data.barcode.BarcodeResult
+import fr.florianfish.mywhiskybeer.data.barcode.message
 import fr.florianfish.mywhiskybeer.data.ocr.LabelScanner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
 import fr.florianfish.mywhiskybeer.domain.ProductForm
@@ -64,6 +67,10 @@ data class TastingEditState(
     val scanning: Boolean = false,
     /** Lignes lues sur l'étiquette, proposées pour remplir le nom ou le producteur. */
     val scannedLines: List<String> = emptyList(),
+    /** Recherche du code-barres en cours. */
+    val barcodeBusy: Boolean = false,
+    /** Résultat du dernier scan de code-barres. */
+    val barcodeMessage: String? = null,
 ) {
     val type: ProductType get() = existing?.product?.type ?: product.type
     val canSave: Boolean get() = !saving && (existing != null || product.name.isNotBlank())
@@ -80,6 +87,7 @@ class TastingEditViewModel @Inject constructor(
     private val productWriter: ProductWriter,
     private val photoStore: PhotoStore,
     private val labelScanner: LabelScanner,
+    private val barcodeLookup: BarcodeLookup,
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<TastingEditRoute>()
@@ -164,6 +172,24 @@ class TastingEditViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Code-barres scanné : produit du carnet s'il est connu (hors-ligne), sinon Open Food Facts
+     * pour pré-remplir les champs vides. Le code est gardé avec le produit.
+     */
+    fun onBarcodeScanned(code: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(barcodeBusy = true, barcodeMessage = null) }
+            val result = barcodeLookup.lookup(code)
+            when (result) {
+                is BarcodeResult.Existing -> selectExisting(result.product)
+                is BarcodeResult.Found -> updateProduct { it.withGuess(result.guess).copy(barcode = code) }
+                BarcodeResult.Invalid -> Unit
+                else -> updateProduct { it.copy(barcode = code) }
+            }
+            _state.update { it.copy(barcodeBusy = false, barcodeMessage = result.message(code)) }
+        }
+    }
+
     fun newCaptureUri(): Uri = photoStore.newCaptureUri()
 
     fun onPhotoPicked(uri: Uri) = importPhoto { photoStore.import(uri) }
@@ -225,6 +251,7 @@ class TastingEditViewModel @Inject constructor(
                 val id = if (existing != null) {
                     // Le produit prend la photo de sa première dégustation
                     productWriter.setPhotoIfMissing(existing, t.photoPath)
+                    productWriter.setBarcodeIfMissing(existing, s.product.barcode)
                     existing.id
                 } else {
                     productWriter.insert(s.product, t.photoPath)
