@@ -9,7 +9,7 @@ on:
 # Workflow partagé : https://github.com/florianfish/Forge-Apk
 jobs:
   build:
-    uses: florianfish/Forge-Apk/.github/workflows/android-build.yml@main
+    uses: florianfish/Forge-Apk/.github/workflows/android-build.yml@fix/cle-debug
     permissions:
       contents: write        # pré-release « debug »
       pull-requests: write   # commentaire sur les PR
