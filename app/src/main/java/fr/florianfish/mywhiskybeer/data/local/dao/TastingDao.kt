@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import fr.florianfish.mywhiskybeer.data.local.entity.AromaIntensity
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingAromaCrossRef
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingWithProduct
@@ -57,4 +58,18 @@ abstract class TastingDao {
     /** Dernier lieu utilisé, pour pré-remplir la saisie. */
     @Query("SELECT place FROM tasting WHERE place IS NOT NULL ORDER BY date DESC LIMIT 1")
     abstract suspend fun lastPlace(): String?
+
+    /** Arômes et intensités de toutes les dégustations d'un produit (profil aromatique). */
+    @Query(
+        """
+        SELECT ta.tastingId, ta.intensity, a.* FROM tasting_aroma ta
+        JOIN aroma a ON a.id = ta.aromaId
+        JOIN tasting t ON t.id = ta.tastingId
+        WHERE t.productId = :productId
+        """,
+    )
+    abstract fun observeAromaIntensities(productId: Long): Flow<List<AromaIntensity>>
+
+    @Query("SELECT COUNT(*) FROM tasting")
+    abstract fun observeCount(): Flow<Int>
 }

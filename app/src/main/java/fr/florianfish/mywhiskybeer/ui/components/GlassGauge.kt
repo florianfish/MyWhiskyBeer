@@ -1,6 +1,7 @@
 package fr.florianfish.mywhiskybeer.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
@@ -30,10 +31,12 @@ fun GlassGauge(
     type: ProductType,
     modifier: Modifier = Modifier,
     size: Dp = 40.dp,
+    /** false pendant un glisser du doigt : le verre suit sans retard. */
+    animate: Boolean = true,
 ) {
     val level by animateFloatAsState(
         targetValue = rating.coerceIn(0, 100) / 100f,
-        animationSpec = tween(durationMillis = 600),
+        animationSpec = if (animate) tween(durationMillis = 600) else snap(),
         label = "glassLevel",
     )
     val liquid = type.accent()

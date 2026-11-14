@@ -25,4 +25,12 @@ class RatingScaleTest {
         assertEquals("3,5/5", RatingScale.format(70, ProductType.BEER))
         assertEquals("87/100", RatingScale.format(87, ProductType.WHISKY))
     }
+
+    @Test
+    fun snapping() {
+        assertEquals(70, RatingScale.snap(67f, ProductType.BEER))
+        assertEquals(67, RatingScale.snap(67.4f, ProductType.WHISKY))
+        assertEquals(100, RatingScale.snap(120f, ProductType.WHISKY))
+        assertEquals(0, RatingScale.snap(-5f, ProductType.BEER))
+    }
 }

@@ -3,8 +3,10 @@ package fr.florianfish.mywhiskybeer.data.local.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarItemEntity
+import fr.florianfish.mywhiskybeer.data.local.entity.CellarItemWithProduct
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarStatus
 import kotlinx.coroutines.flow.Flow
 
@@ -21,4 +23,11 @@ interface CellarDao {
 
     @Query("SELECT * FROM cellar_item WHERE productId = :productId")
     fun observeForProduct(productId: Long): Flow<CellarItemEntity?>
+
+    @Transaction
+    @Query("SELECT * FROM cellar_item")
+    fun observeAllWithProduct(): Flow<List<CellarItemWithProduct>>
+
+    @Query("DELETE FROM cellar_item WHERE productId = :productId")
+    suspend fun deleteForProduct(productId: Long)
 }

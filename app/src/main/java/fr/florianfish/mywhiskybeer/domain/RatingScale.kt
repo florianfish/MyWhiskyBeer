@@ -23,4 +23,27 @@ object RatingScale {
 
     /** 0..5 (pas de 0,5) → 0..100. */
     fun fromBeerStars(stars: Double): Int = (stars.coerceIn(0.0, 5.0) * 20).roundToInt()
+
+    /** Appréciation en mots, commune aux deux types. */
+    fun label(rating: Int): String = when {
+        rating < 40 -> "À fuir"
+        rating < 60 -> "Décevant"
+        rating < 70 -> "Correct"
+        rating < 80 -> "Bon"
+        rating < 85 -> "Très bon"
+        rating < 90 -> "Excellent"
+        else -> "Exceptionnel"
+    }
+
+    /** Pas du curseur : un demi-point pour la bière, un point pour le whisky. */
+    fun step(type: ProductType): Int = when (type) {
+        ProductType.BEER -> 10
+        ProductType.WHISKY -> 1
+    }
+
+    /** Ramène une note brute au pas du type. */
+    fun snap(raw: Float, type: ProductType): Int {
+        val step = step(type)
+        return ((raw / step).roundToInt() * step).coerceIn(0, 100)
+    }
 }

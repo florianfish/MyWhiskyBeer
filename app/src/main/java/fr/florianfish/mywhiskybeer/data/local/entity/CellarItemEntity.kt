@@ -1,8 +1,10 @@
 package fr.florianfish.mywhiskybeer.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 
 /** État d'un produit dans la cave (ou la wishlist). */
 @Entity(
@@ -24,4 +26,10 @@ data class CellarItemEntity(
     val purchaseDate: Long? = null,
     val purchasePrice: Double? = null,
     val shop: String? = null,
+)
+
+data class CellarItemWithProduct(
+    @Embedded val item: CellarItemEntity,
+    @Relation(parentColumn = "productId", entityColumn = "id")
+    val product: ProductEntity,
 )

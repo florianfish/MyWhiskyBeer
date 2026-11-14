@@ -92,3 +92,10 @@ data class TastingWithProduct(
     )
     val aromas: List<AromaEntity>,
 )
+
+/** Arôme noté dans une dégustation, avec son intensité. */
+data class AromaIntensity(
+    val tastingId: Long,
+    val intensity: Int,
+    @Embedded val aroma: AromaEntity,
+)

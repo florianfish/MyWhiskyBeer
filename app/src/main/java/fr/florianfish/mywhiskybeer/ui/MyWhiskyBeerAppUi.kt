@@ -26,15 +26,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import fr.florianfish.mywhiskybeer.ui.components.ComingSoon
+import fr.florianfish.mywhiskybeer.ui.cellar.CellarScreen
 import fr.florianfish.mywhiskybeer.ui.home.HomeScreen
 import fr.florianfish.mywhiskybeer.ui.navigation.CellarRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.HomeRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductDetailRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
+import fr.florianfish.mywhiskybeer.ui.product.ProductDetailScreen
 import fr.florianfish.mywhiskybeer.ui.products.ProductsScreen
+import fr.florianfish.mywhiskybeer.ui.tasting.TastingEditScreen
 import kotlin.reflect.KClass
 
 private data class TopLevel(val route: Any, val routeClass: KClass<*>, val label: String, val icon: ImageVector)
@@ -55,10 +56,12 @@ fun MyWhiskyBeerAppUi() {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(current?.label ?: "MyWhiskyBeer", style = MaterialTheme.typography.headlineSmall) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
+            if (current != null) {
+                TopAppBar(
+                    title = { Text(current.label, style = MaterialTheme.typography.headlineSmall) },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                )
+            }
         },
         bottomBar = {
             if (current != null) {
@@ -93,26 +96,45 @@ fun MyWhiskyBeerAppUi() {
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
+        // Les écrans de premier niveau utilisent les marges du Scaffold ;
+        // la saisie et la fiche produit gèrent leur propre Scaffold, en plein écran.
         NavHost(
             navController = navController,
             startDestination = HomeRoute,
-            modifier = Modifier.padding(padding),
         ) {
             composable<HomeRoute> {
-                HomeScreen(onTastingClick = { navController.navigate(ProductDetailRoute(it)) })
+                HomeScreen(
+                    onTastingClick = { navController.navigate(ProductDetailRoute(it)) },
+                    modifier = Modifier.padding(padding),
+                )
             }
             composable<ProductsRoute> {
-                ProductsScreen(onProductClick = { navController.navigate(ProductDetailRoute(it)) })
+                ProductsScreen(
+                    onProductClick = { navController.navigate(ProductDetailRoute(it)) },
+                    modifier = Modifier.padding(padding),
+                )
             }
             composable<CellarRoute> {
-                ComingSoon("La cave")
+                CellarScreen(
+                    onProductClick = { navController.navigate(ProductDetailRoute(it)) },
+                    modifier = Modifier.padding(padding),
+                )
             }
             composable<TastingEditRoute> {
-                ComingSoon("Nouvelle dégustation")
+                TastingEditScreen(
+                    onClose = { navController.popBackStack() },
+                    onSaved = { productId ->
+                        navController.navigate(ProductDetailRoute(productId)) {
+                            popUpTo<TastingEditRoute> { inclusive = true }
+                        }
+                    },
+                )
             }
-            composable<ProductDetailRoute> { entry ->
-                val route = entry.toRoute<ProductDetailRoute>()
-                ComingSoon("Fiche produit #${route.productId}")
+            composable<ProductDetailRoute> {
+                ProductDetailScreen(
+                    onBack = { navController.popBackStack() },
+                    onTasteAgain = { navController.navigate(TastingEditRoute(it)) },
+                )
             }
         }
     }
