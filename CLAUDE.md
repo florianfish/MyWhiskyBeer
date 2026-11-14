@@ -8,8 +8,8 @@ MyWhiskyBeer: personal Android app to rate beers and whiskies (Kotlin, Jetpack C
 
 ## Build
 
-- Gradle wrapper is committed (8.14.3): `./gradlew assembleDebug testDebugUnitTest`. JDK 17, compileSdk/targetSdk 35, minSdk 26.
-- Versions live in `gradle/libs.versions.toml` (AGP 8.7, Kotlin 2.1 with the Compose compiler plugin, KSP for Room and Hilt). Bump AGP/Kotlin/KSP/Hilt together: KSP's version is tied to Kotlin's.
+- Gradle wrapper is committed (9.9.1): `./gradlew assembleDebug testDebugUnitTest`. JDK 17, compileSdk 37, targetSdk 35, minSdk 26. Toolchain aligned with MyRadioPlayer.
+- Versions live in `gradle/libs.versions.toml`: AGP 9.5 with **built-in Kotlin** (Kotlin 2.4). `org.jetbrains.kotlin.android` is only declared `apply false` in the root build to pin the Kotlin version, never applied in `:app`, and there is no `kotlinOptions` block (jvmTarget follows `compileOptions`). The Compose and serialization compiler plugins use the same Kotlin version. KSP (2.3.x) is no longer tied to the Kotlin version. Hilt ≥ 2.59 is required by AGP 9. Compose `hiltViewModel()` comes from `androidx.hilt:hilt-lifecycle-viewmodel-compose` (`androidx.hilt.lifecycle.viewmodel.compose`).
 - Room schemas are exported to `app/schemas/` (generated at build). Any entity change must bump `AppDatabase.version` and add a migration — users' notes must never be wiped.
 - CI workflows are thin callers of the shared reusable workflows in the public repo `florianfish/Forge-Apk` (`android-build.yml`, `android-release.yml`, called `@main`). Change CI behaviour there, not here.
 - `build.yml` runs `assembleDebug testDebugUnitTest` on every push to `main` and every PR, uploads the APK as the `MyWhiskyBeer-apk` artifact, comments the link on PRs, and on `main` replaces the `debug` pre-release: always-current APK at `https://github.com/florianfish/MyWhiskyBeer/releases/download/debug/MyWhiskyBeer-debug.apk`.
