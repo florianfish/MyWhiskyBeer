@@ -28,7 +28,7 @@ import fr.florianfish.mywhiskybeer.data.local.entity.WhiskyDetailsEntity
         TastingAromaCrossRef::class,
         CellarItemEntity::class,
     ],
-    version = 2,
+    version = 1,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -49,6 +49,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        val MIGRATIONS = arrayOf(MIGRATION_1_2)
+        val MIGRATIONS = emptyArray<Migration>()
     }
 }

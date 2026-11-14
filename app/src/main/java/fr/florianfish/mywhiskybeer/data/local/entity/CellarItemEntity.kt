@@ -24,8 +24,7 @@ import androidx.room.Relation
 data class CellarItemEntity(
     @PrimaryKey val productId: Long,
     val status: CellarStatus,
-    /** Nombre de bouteilles (en stock, ou à acheter pour la liste d'achats). */
-    @ColumnInfo(defaultValue = "1") val quantity: Int = 1,
+    @androidx.room.Ignore val quantity: Int = 1,
     /** Niveau restant en % (whisky surtout). */
     val fillLevel: Int? = null,
     val purchaseDate: Long? = null,
