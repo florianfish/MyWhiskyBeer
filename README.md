@@ -24,7 +24,29 @@ Pas de réseau social, pas de compte : un carnet perso, rapide à remplir, qui f
 | Architecture | MVVM, Hilt pour l'injection, Flow/StateFlow |
 | Sauvegarde | Export/import JSON + photos (zip), puis éventuellement synchro auto-hébergée |
 
+## Compiler
+
+Ouvrir le projet dans Android Studio (JDK 17), ou en ligne de commande :
+
+```
+./gradlew assembleDebug
+./gradlew testDebugUnitTest
+```
+
+minSdk 26, targetSdk 35. Le schéma Room est exporté dans `app/schemas/` (à versionner).
+
+## Structure
+
+```
+app/src/main/java/fr/florianfish/mywhiskybeer/
+├── data/local/        # Room : entités, DAO, base, référentiel d'arômes
+├── di/                # Modules Hilt
+├── domain/            # Logique métier (échelles de notes…)
+└── ui/                # Compose : thème, composants, écrans, navigation
+```
+
 ## Documentation
 
 - [`docs/PLAN.md`](docs/PLAN.md) — modèle de données, écrans, roadmap par version
 - [`docs/FEATURES.md`](docs/FEATURES.md) — idées de fonctionnalités, priorisées
+- [`docs/DESIGN.md`](docs/DESIGN.md) — direction visuelle, couleurs, éléments signature

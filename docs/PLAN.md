@@ -59,7 +59,7 @@ Arborescence par famille, différente pour bière et whisky :
 ## 3. Roadmap
 
 ### V1 — MVP
-- [ ] Projet Android (Compose, Room, Hilt)
+- [x] Projet Android (Compose, Room, Hilt)
 - [ ] CRUD produits bière & whisky
 - [ ] Dégustation : note, nez/bouche/finale, commentaire, date, lieu
 - [ ] Sélection d'arômes depuis le référentiel

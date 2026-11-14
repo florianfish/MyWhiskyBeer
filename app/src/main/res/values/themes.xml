@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Thème de la fenêtre avant le rendu Compose (fond sombre pour éviter le flash blanc) -->
+    <style name="Theme.MyWhiskyBeer" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/cave_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
