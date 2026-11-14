@@ -70,8 +70,8 @@ Arborescence par famille, différente pour bière et whisky :
 
 ### V2 — Confort
 - [ ] Scan code-barres (ML Kit) + pré-remplissage depuis Open Food Facts (bières)
-- [ ] OCR de l'étiquette pour pré-remplir nom / degré / âge
-- [x] Gestion de la cave et de la wishlist
+- [x] OCR de l'étiquette pour pré-remplir nom / producteur / degré / âge / style / région (ML Kit, hors-ligne)
+- [x] Gestion de la cave et de la wishlist (formulaire « bouteille » dédié : quantité, prix, caviste, date d'achat)
 - [ ] Statistiques globales (le radar par produit est fait)
 - [ ] Comparer deux dégustations côte à côte
 

@@ -12,3 +12,9 @@ import kotlinx.serialization.Serializable
 @Serializable data class TastingEditRoute(val productId: Long? = null)
 
 @Serializable data class ProductDetailRoute(val productId: Long)
+
+/**
+ * Ajout ou modification d'une bouteille en cave (stock, pas dégustation).
+ * productId = produit existant ; wishlist = ouvrir directement en « à acheter ».
+ */
+@Serializable data class BottleEditRoute(val productId: Long? = null, val wishlist: Boolean = false)

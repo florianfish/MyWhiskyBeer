@@ -24,6 +24,7 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME)
             .addCallback(AromaSeed.callback)
+            .addMigrations(*AppDatabase.MIGRATIONS)
             .build()
 
     @Provides fun provideProductDao(db: AppDatabase): ProductDao = db.productDao()

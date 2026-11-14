@@ -1,5 +1,6 @@
 package fr.florianfish.mywhiskybeer.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -21,6 +22,8 @@ import androidx.room.Relation
 data class CellarItemEntity(
     @PrimaryKey val productId: Long,
     val status: CellarStatus,
+    /** Nombre de bouteilles (en stock, ou à acheter pour la liste d'achats). */
+    @ColumnInfo(defaultValue = "1") val quantity: Int = 1,
     /** Niveau restant en % (whisky surtout). */
     val fillLevel: Int? = null,
     val purchaseDate: Long? = null,

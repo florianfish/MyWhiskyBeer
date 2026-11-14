@@ -22,6 +22,9 @@ interface CellarDao {
     fun observeByStatus(status: CellarStatus): Flow<List<CellarItemEntity>>
 
     @Query("SELECT * FROM cellar_item WHERE productId = :productId")
+    suspend fun getForProduct(productId: Long): CellarItemEntity?
+
+    @Query("SELECT * FROM cellar_item WHERE productId = :productId")
     fun observeForProduct(productId: Long): Flow<CellarItemEntity?>
 
     @Transaction

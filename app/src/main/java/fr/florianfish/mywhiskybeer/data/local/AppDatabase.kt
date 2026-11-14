@@ -3,6 +3,8 @@ package fr.florianfish.mywhiskybeer.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.florianfish.mywhiskybeer.data.local.dao.AromaDao
 import fr.florianfish.mywhiskybeer.data.local.dao.CellarDao
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
@@ -25,7 +27,7 @@ import fr.florianfish.mywhiskybeer.data.local.entity.WhiskyDetailsEntity
         TastingAromaCrossRef::class,
         CellarItemEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -37,5 +39,14 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         const val NAME = "mywhiskybeer.db"
+
+        /** v2 : nombre de bouteilles en cave. */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE cellar_item ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
+        val MIGRATIONS = arrayOf(MIGRATION_1_2)
     }
 }

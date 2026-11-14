@@ -26,8 +26,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import fr.florianfish.mywhiskybeer.ui.bottle.BottleEditScreen
 import fr.florianfish.mywhiskybeer.ui.cellar.CellarScreen
 import fr.florianfish.mywhiskybeer.ui.home.HomeScreen
+import fr.florianfish.mywhiskybeer.ui.navigation.BottleEditRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.CellarRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.HomeRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductDetailRoute
@@ -84,7 +86,8 @@ fun MyWhiskyBeerAppUi() {
             }
         },
         floatingActionButton = {
-            if (current != null) {
+            // La cave a son propre bouton (ajout de bouteilles)
+            if (current != null && current.route != CellarRoute) {
                 ExtendedFloatingActionButton(
                     onClick = { navController.navigate(TastingEditRoute()) },
                     icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
@@ -117,6 +120,7 @@ fun MyWhiskyBeerAppUi() {
             composable<CellarRoute> {
                 CellarScreen(
                     onProductClick = { navController.navigate(ProductDetailRoute(it)) },
+                    onAddBottle = { wishlist -> navController.navigate(BottleEditRoute(wishlist = wishlist)) },
                     modifier = Modifier.padding(padding),
                 )
             }
@@ -134,7 +138,11 @@ fun MyWhiskyBeerAppUi() {
                 ProductDetailScreen(
                     onBack = { navController.popBackStack() },
                     onTasteAgain = { navController.navigate(TastingEditRoute(it)) },
+                    onEditStock = { navController.navigate(BottleEditRoute(productId = it)) },
                 )
+            }
+            composable<BottleEditRoute> {
+                BottleEditScreen(onClose = { navController.popBackStack() })
             }
         }
     }

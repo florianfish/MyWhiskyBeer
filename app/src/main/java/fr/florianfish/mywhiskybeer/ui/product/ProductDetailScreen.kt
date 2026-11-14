@@ -76,6 +76,7 @@ import java.util.Date
 fun ProductDetailScreen(
     onBack: () -> Unit,
     onTasteAgain: (productId: Long) -> Unit,
+    onEditStock: (productId: Long) -> Unit,
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -136,6 +137,7 @@ fun ProductDetailScreen(
                         cellar = state.cellar,
                         onStatus = viewModel::setCellarStatus,
                         onFillLevel = viewModel::setFillLevel,
+                        onEdit = { onEditStock(product.product.id) },
                     )
                 }
                 if (state.profile.isNotEmpty()) {
@@ -273,8 +275,25 @@ private fun CellarBlock(
     cellar: CellarItemEntity?,
     onStatus: (CellarStatus?) -> Unit,
     onFillLevel: (Int) -> Unit,
+    onEdit: () -> Unit,
 ) {
     Section("Cave") {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val info = cellar?.let { c ->
+                listOfNotNull(
+                    "${c.quantity} bouteille" + if (c.quantity > 1) "s" else "",
+                    c.purchasePrice?.let { "${formatNumber(it)} €" },
+                    c.shop,
+                ).joinToString(" · ")
+            }
+            Text(
+                info ?: "Pas en cave",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onEdit) { Text(if (cellar == null) "Ajouter" else "Modifier") }
+        }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(
                 CellarStatus.IN_STOCK to "En stock",
