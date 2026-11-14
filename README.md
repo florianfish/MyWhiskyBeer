@@ -24,6 +24,12 @@ Pas de réseau social, pas de compte : un carnet perso, rapide à remplir, qui f
 | Architecture | MVVM, Hilt pour l'injection, Flow/StateFlow |
 | Sauvegarde | Export/import JSON + photos (zip), puis éventuellement synchro auto-hébergée |
 
+## Installer
+
+Dernier APK de debug (remplacé à chaque push sur `main`) : [MyWhiskyBeer-debug.apk](https://github.com/florianfish/MyWhiskyBeer/releases/download/debug/MyWhiskyBeer-debug.apk). Il s'installe par-dessus le précédent (clé de debug fixe) et à côté d'une version release.
+
+La CI utilise les workflows partagés de [Forge-Apk](https://github.com/florianfish/Forge-Apk).
+
 ## Compiler
 
 Ouvrir le projet dans Android Studio (JDK 17), ou en ligne de commande :
