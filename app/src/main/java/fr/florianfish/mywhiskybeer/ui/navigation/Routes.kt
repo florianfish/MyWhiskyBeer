@@ -18,3 +18,5 @@ import kotlinx.serialization.Serializable
  * productId = produit existant ; wishlist = ouvrir directement en « à acheter ».
  */
 @Serializable data class BottleEditRoute(val productId: Long? = null, val wishlist: Boolean = false)
+
+@Serializable data object SettingsRoute

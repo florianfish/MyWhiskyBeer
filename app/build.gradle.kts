@@ -15,9 +15,12 @@ android {
         applicationId = "fr.florianfish.mywhiskybeer"
         minSdk = 26
         targetSdk = 35
-        // Fournis par le workflow de release (numéro de run, tag sans le « v »)
+        // Fournis par la CI (Forge-Apk) : release = tag sans le « v » et n° du run de release ;
+        // debug = dernière release et n° du run de build (le suffixe -debug.<run> est ajouté plus bas)
         versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = System.getenv("VERSION_NAME") ?: "0.1.0"
+        // Commit compilé, affiché dans Réglages › À propos
+        buildConfigField("String", "COMMIT", "\"${System.getenv("GITHUB_SHA")?.take(7) ?: "local"}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
