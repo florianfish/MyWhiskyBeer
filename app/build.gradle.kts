@@ -56,6 +56,19 @@ android {
 
     // Pas de kotlinOptions avec AGP 9 : jvmTarget suit compileOptions
 
+    // Schémas Room (app/schemas) en assets des builds de debug : MigrationTestHelper les y lit (tests Robolectric)
+    sourceSets {
+        getByName("debug") {
+            assets.directories += "$projectDir/schemas"
+        }
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true // assets et ressources disponibles pour Robolectric
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true // BuildConfig.VERSION_NAME, affiché dans l'appli
@@ -96,6 +109,34 @@ dependencies {
     implementation(libs.mlkit.text.recognition) // OCR des étiquettes, modèle embarqué (hors-ligne)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.room.testing)
 }
+
+// Garde-fou (CI uniquement) : les schémas Room générés à la compilation doivent être identiques à ceux
+// du repo. Une entité modifiée sans nouvelle version de base, ou une nouvelle version sans son schéma
+// commité, fait échouer le build avant les tests.
+val verifierSchemasRoom by tasks.registering {
+    group = "verification"
+    description = "Vérifie que app/schemas est à jour et commité."
+    dependsOn("kspDebugKotlin")
+    onlyIf { System.getenv("CI") == "true" }
+    val schemas = layout.projectDirectory.dir("schemas").asFile
+    doLast {
+        val changes = providers.exec {
+            commandLine("git", "status", "--porcelain", "--", schemas.path)
+        }.standardOutput.asText.get()
+        if (changes.isNotBlank()) {
+            throw GradleException(
+                "Schémas Room modifiés ou non commités :\n$changes\n" +
+                    "Une entité a changé : augmenter AppDatabase.version, écrire la migration et son test, " +
+                    "puis commiter le nouveau fichier de app/schemas.",
+            )
+        }
+    }
+}
+tasks.matching { it.name == "testDebugUnitTest" }.configureEach { dependsOn(verifierSchemasRoom) }
