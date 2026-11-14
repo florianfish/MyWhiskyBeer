@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
@@ -9,7 +8,7 @@ plugins {
 
 android {
     namespace = "fr.florianfish.mywhiskybeer"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "fr.florianfish.mywhiskybeer"
@@ -55,9 +54,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    // Pas de kotlinOptions avec AGP 9 : jvmTarget suit compileOptions
 
     buildFeatures {
         compose = true
@@ -91,7 +88,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
