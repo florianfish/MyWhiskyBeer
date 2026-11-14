@@ -271,7 +271,7 @@ private fun ScannedLines(lines: List<String>, onFormChange: ((ProductForm) -> Pr
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ProductDetailsFields(form: ProductForm, onFormChange: ((ProductForm) -> ProductForm) -> Unit) {
+internal fun ProductDetailsFields(form: ProductForm, onFormChange: ((ProductForm) -> ProductForm) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         FormTextField(form.barcode, { v -> onFormChange { it.copy(barcode = v.filter(Char::isDigit)) } }, "Code-barres", keyboardType = KeyboardType.Number)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

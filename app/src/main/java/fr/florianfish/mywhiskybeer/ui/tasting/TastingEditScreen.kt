@@ -64,7 +64,7 @@ fun TastingEditScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nouvelle dégustation") },
+                title = { Text(if (state.editing) "Modifier la dégustation" else "Nouvelle dégustation") },
                 navigationIcon = {
                     IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, contentDescription = "Fermer") }
                 },
@@ -87,7 +87,8 @@ fun TastingEditScreen(
         ) {
             val existing = state.existing
             if (existing != null) {
-                ExistingProductCard(existing, onChange = viewModel::clearExisting)
+                // En modification, la dégustation reste rattachée à son produit
+                ExistingProductCard(existing, onChange = if (state.editing) null else viewModel::clearExisting)
             } else {
                 ProductFormSection(
                     form = state.product,
@@ -142,7 +143,7 @@ fun TastingEditScreen(
                 if (state.saving) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                 } else {
-                    Text("Enregistrer la dégustation")
+                    Text(if (state.editing) "Enregistrer les modifications" else "Enregistrer la dégustation")
                 }
             }
             Spacer(Modifier.height(24.dp))

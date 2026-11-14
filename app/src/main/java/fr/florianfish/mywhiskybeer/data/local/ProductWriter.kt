@@ -4,6 +4,7 @@ import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
 import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
+import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.local.entity.WhiskyDetailsEntity
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.domain.blankToNull
@@ -39,6 +40,43 @@ class ProductWriter @Inject constructor(
                 product,
                 WhiskyDetailsEntity(
                     productId = 0,
+                    category = form.category.blankToNull(),
+                    age = form.age.trim().toIntOrNull(),
+                    caskType = form.caskType.blankToNull(),
+                    peat = form.peat,
+                    caskStrength = form.caskStrength,
+                ),
+            )
+        }
+    }
+
+    /**
+     * Met à jour un produit existant avec le formulaire. Le type ne change pas ; les champs
+     * de détail absents du formulaire (millésime, ppm, embouteilleur…) sont conservés.
+     */
+    suspend fun update(existing: ProductWithDetails, form: ProductForm, photoPath: String?) {
+        val p = existing.product
+        productDao.updateProduct(
+            p.copy(
+                name = form.name.trim(),
+                producer = form.producer.blankToNull(),
+                country = form.country.blankToNull(),
+                region = form.region.blankToNull(),
+                abv = form.abv.toDecimalOrNull(),
+                barcode = form.barcode.blankToNull(),
+                photoPath = photoPath,
+            ),
+        )
+        when (p.type) {
+            ProductType.BEER -> productDao.upsertBeerDetails(
+                (existing.beer ?: BeerDetailsEntity(productId = p.id)).copy(
+                    style = form.style.blankToNull(),
+                    ibu = form.ibu.trim().toIntOrNull(),
+                    color = form.color.blankToNull(),
+                ),
+            )
+            ProductType.WHISKY -> productDao.upsertWhiskyDetails(
+                (existing.whisky ?: WhiskyDetailsEntity(productId = p.id)).copy(
                     category = form.category.blankToNull(),
                     age = form.age.trim().toIntOrNull(),
                     caskType = form.caskType.blankToNull(),

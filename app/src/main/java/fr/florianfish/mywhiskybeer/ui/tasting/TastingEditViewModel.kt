@@ -20,6 +20,7 @@ import fr.florianfish.mywhiskybeer.data.barcode.BarcodeLookup
 import fr.florianfish.mywhiskybeer.data.barcode.BarcodeResult
 import fr.florianfish.mywhiskybeer.data.barcode.message
 import fr.florianfish.mywhiskybeer.data.ocr.LabelScanner
+import fr.florianfish.mywhiskybeer.data.photo.PhotoCleaner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.domain.blankToNull
@@ -71,6 +72,8 @@ data class TastingEditState(
     val barcodeBusy: Boolean = false,
     /** Résultat du dernier scan de code-barres. */
     val barcodeMessage: String? = null,
+    /** Modification d'une dégustation existante (sinon nouvelle dégustation). */
+    val editing: Boolean = false,
 ) {
     val type: ProductType get() = existing?.product?.type ?: product.type
     val canSave: Boolean get() = !saving && (existing != null || product.name.isNotBlank())
@@ -88,6 +91,7 @@ class TastingEditViewModel @Inject constructor(
     private val photoStore: PhotoStore,
     private val labelScanner: LabelScanner,
     private val barcodeLookup: BarcodeLookup,
+    private val photoCleaner: PhotoCleaner,
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<TastingEditRoute>()
@@ -118,15 +122,47 @@ class TastingEditViewModel @Inject constructor(
     private val importedPhotos = mutableSetOf<String>()
     private var committed = false
 
+    /** Dégustation en cours de modification, telle qu'en base. */
+    private var original: TastingEntity? = null
+
     init {
-        viewModelScope.launch {
-            val lastPlace = tastingDao.lastPlace().orEmpty()
-            _state.update { it.copy(tasting = it.tasting.copy(place = lastPlace)) }
-        }
-        route.productId?.let { id ->
+        val tastingId = route.tastingId
+        if (tastingId != null) {
+            viewModelScope.launch { loadForEdit(tastingId) }
+        } else {
             viewModelScope.launch {
-                productDao.observeById(id).first()?.let { selectExisting(it) }
+                val lastPlace = tastingDao.lastPlace().orEmpty()
+                _state.update { it.copy(tasting = it.tasting.copy(place = lastPlace)) }
             }
+            route.productId?.let { id ->
+                viewModelScope.launch {
+                    productDao.observeById(id).first()?.let { selectExisting(it) }
+                }
+            }
+        }
+    }
+
+    private suspend fun loadForEdit(tastingId: Long) {
+        val t = tastingDao.getById(tastingId) ?: return
+        val product = productDao.observeById(t.productId).first() ?: return
+        val aromas = tastingDao.aromaRefs(tastingId).associate { it.aromaId to it.intensity }
+        original = t
+        _state.update {
+            it.copy(
+                editing = true,
+                existing = product,
+                tasting = TastingForm(
+                    rating = t.rating,
+                    nose = t.nose.orEmpty(),
+                    palate = t.palate.orEmpty(),
+                    finish = t.finish.orEmpty(),
+                    comment = t.comment.orEmpty(),
+                    place = t.place.orEmpty(),
+                    servedAs = t.servedAs.orEmpty(),
+                    aromas = aromas,
+                    photoPath = t.photoPath,
+                ),
+            )
         }
     }
 
@@ -258,6 +294,9 @@ class TastingEditViewModel @Inject constructor(
                 }
                 tastingDao.save(
                     TastingEntity(
+                        // En modification : même identifiant et même date qu'avant
+                        id = original?.id ?: 0,
+                        date = original?.date ?: System.currentTimeMillis(),
                         productId = id,
                         rating = t.rating,
                         nose = t.nose.blankToNull(),
@@ -273,6 +312,8 @@ class TastingEditViewModel @Inject constructor(
                 id
             }
             committed = true
+            // Photo remplacée ou retirée : l'ancien fichier est supprimé s'il ne sert plus
+            original?.photoPath?.takeIf { it != t.photoPath }?.let { photoCleaner.deleteIfUnused(it) }
             _saved.send(productId)
         }
     }

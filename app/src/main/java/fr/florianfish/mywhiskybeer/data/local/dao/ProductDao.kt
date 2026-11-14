@@ -92,4 +92,7 @@ abstract class ProductDao {
         """,
     )
     abstract fun observeProducers(type: ProductType): Flow<List<String>>
+
+    @Query("SELECT COUNT(*) FROM product WHERE photoPath = :path")
+    abstract suspend fun countPhotoUses(path: String): Int
 }
