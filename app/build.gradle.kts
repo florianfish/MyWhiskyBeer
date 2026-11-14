@@ -15,13 +15,30 @@ android {
         applicationId = "fr.florianfish.mywhiskybeer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // Fournis par le workflow de release (numéro de run, tag sans le « v »)
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
+        versionName = System.getenv("VERSION_NAME") ?: "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Clé fixe pour que chaque release s'installe par-dessus la précédente (sinon désinstallation = notes perdues)
+    signingConfigs {
+        create("release") {
+            System.getenv("KEYSTORE_FILE")?.let { storeFile = file(it) }
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
+        // APK de test : suffixe pour ne pas le confondre avec une release, + n° du run CI quand il existe
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug" + (System.getenv("GITHUB_RUN_NUMBER")?.let { ".$it" } ?: "")
+        }
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -41,6 +58,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true // BuildConfig.VERSION_NAME, affiché dans l'appli
     }
 }
 
