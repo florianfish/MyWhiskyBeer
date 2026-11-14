@@ -1,5 +1,6 @@
 package fr.florianfish.mywhiskybeer.data.local.entity
 
+import kotlinx.serialization.Serializable
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
@@ -19,6 +20,7 @@ import androidx.room.Relation
         ),
     ],
 )
+@Serializable // sauvegarde (data/backup)
 data class CellarItemEntity(
     @PrimaryKey val productId: Long,
     val status: CellarStatus,

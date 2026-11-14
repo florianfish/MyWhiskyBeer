@@ -24,7 +24,8 @@ import kotlin.math.max
 class PhotoStore @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
-    private val photosDir: File
+    /** Dossier des photos de l'appli (aussi utilisé par la sauvegarde). */
+    val photosDir: File
         get() = File(context.filesDir, "photos").apply { mkdirs() }
 
     private val captureFile: File

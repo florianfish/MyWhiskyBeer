@@ -66,7 +66,7 @@ Arborescence par famille, différente pour bière et whisky :
 - [x] Sélection d'arômes depuis le référentiel (roue avec intensités)
 - [x] Photo depuis l'appareil photo ou la galerie
 - [x] Liste filtrable par type (recherche texte à faire)
-- [ ] Export / import JSON (sauvegarde)
+- [x] Sauvegarde / restauration (zip JSON + photos, vers Google Drive via le sélecteur de fichiers)
 
 ### V2 — Confort
 - [ ] Scan code-barres (ML Kit) + pré-remplissage depuis Open Food Facts (bières)
