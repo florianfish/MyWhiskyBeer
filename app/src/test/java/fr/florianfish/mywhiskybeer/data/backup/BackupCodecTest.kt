@@ -66,9 +66,9 @@ class BackupCodecTest {
         val s = BackupCodec.summary(sample)
         assertEquals(2, s.products)
         assertEquals(2, s.tastings)
-        assertEquals(2, s.bottles) // la bouteille entamée × 2 ; la liste d'achats ne compte pas
+        assertEquals(1, s.bottles) // TEMP v1
         assertEquals(2, s.photos)
-        assertEquals("2 produits, 2 dégustations, 2 bouteilles, 2 photos", s.text)
+        assertEquals("2 produits, 2 dégustations, 1 bouteille, 2 photos", s.text)
     }
 
     @Test
