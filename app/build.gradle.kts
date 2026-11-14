@@ -99,3 +99,15 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.room.testing)
 }
+
+// TEMPORAIRE : imprime les schémas Room dans le log de la CI
+tasks.register("imprimerSchemas") {
+    doLast {
+        fileTree("schemas").files.sorted().forEach { f ->
+            println("=====SCHEMA " + f.relativeTo(projectDir))
+            println(f.readText())
+            println("=====FIN")
+        }
+    }
+}
+tasks.matching { it.name == "assembleDebug" }.configureEach { finalizedBy("imprimerSchemas") }
