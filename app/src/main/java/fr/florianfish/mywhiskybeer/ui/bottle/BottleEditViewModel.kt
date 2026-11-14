@@ -249,7 +249,6 @@ private fun CellarItemEntity.toForm() = StockForm(
 private fun StockForm.toEntity(productId: Long) = CellarItemEntity(
     productId = productId,
     status = status,
-    quantity = quantity.coerceAtLeast(1),
     fillLevel = when (status) {
         CellarStatus.IN_STOCK -> 100
         CellarStatus.OPENED -> fillLevel.coerceIn(1, 99)

@@ -31,7 +31,7 @@ class BackupCodecTest {
         ),
         aromas = listOf(AromaRef(10, ProductType.WHISKY, "Tourbé / fumé", "Tourbe", 3)),
         cellar = listOf(
-            CellarItemEntity(productId = 1, status = CellarStatus.OPENED, quantity = 2, fillLevel = 40),
+            CellarItemEntity(productId = 1, status = CellarStatus.OPENED, fillLevel = 40),
             CellarItemEntity(productId = 2, status = CellarStatus.WISHLIST),
         ),
     )

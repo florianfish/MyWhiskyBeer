@@ -24,13 +24,14 @@ import androidx.room.Relation
 data class CellarItemEntity(
     @PrimaryKey val productId: Long,
     val status: CellarStatus,
-    @androidx.room.Ignore val quantity: Int = 1,
     /** Niveau restant en % (whisky surtout). */
     val fillLevel: Int? = null,
     val purchaseDate: Long? = null,
     val purchasePrice: Double? = null,
     val shop: String? = null,
-)
+) {
+    val quantity: Int get() = 1
+}
 
 data class CellarItemWithProduct(
     @Embedded val item: CellarItemEntity,
