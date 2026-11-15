@@ -39,6 +39,8 @@ fun TastingCard(
     item: TastingWithProduct,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Étiquette BIÈRE / WHISKY, utile seulement quand la liste mélange les deux. */
+    showType: Boolean = true,
 ) {
     val type = item.product.type
     Card(
@@ -59,7 +61,7 @@ fun TastingCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TypeBadge(type)
+                    if (showType) TypeBadge(type)
                     Text(
                         item.product.name,
                         style = MaterialTheme.typography.titleLarge,

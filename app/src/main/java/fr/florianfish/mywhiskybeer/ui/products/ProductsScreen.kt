@@ -49,7 +49,9 @@ import fr.florianfish.mywhiskybeer.domain.ProductListing
 import fr.florianfish.mywhiskybeer.domain.ProductSort
 import fr.florianfish.mywhiskybeer.domain.RatingScale
 import fr.florianfish.mywhiskybeer.ui.components.EmptyState
+import fr.florianfish.mywhiskybeer.domain.formatDecimal
 import fr.florianfish.mywhiskybeer.ui.components.GlassGauge
+import fr.florianfish.mywhiskybeer.ui.components.ProductThumb
 import fr.florianfish.mywhiskybeer.ui.components.StyleFilterChips
 import fr.florianfish.mywhiskybeer.ui.components.TypeBadge
 import fr.florianfish.mywhiskybeer.ui.components.TypeFilterChips
@@ -116,6 +118,8 @@ fun ProductsScreen(
                 },
             )
             else -> LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
+                // Type affiché seulement si la liste mélange bières et whiskies
+                val mixed = state.products.map { it.product.type }.distinct().size > 1
                 if (sort == ProductSort.STYLE) {
                     // Sections par style (bière) ou catégorie (whisky), dans l'ordre du tri
                     state.products
@@ -125,12 +129,12 @@ fun ProductsScreen(
                                 GroupHeader(ProductListing.groupKey(items.first()), items.size, items.first().product.type)
                             }
                             items(items, key = { it.product.id }) { item ->
-                                ProductRow(item, onClick = { onProductClick(item.product.id) })
+                                ProductRow(item, showType = mixed, onClick = { onProductClick(item.product.id) })
                             }
                         }
                 } else {
                     items(state.products, key = { it.product.id }) { item ->
-                        ProductRow(item, onClick = { onProductClick(item.product.id) })
+                        ProductRow(item, showType = mixed, onClick = { onProductClick(item.product.id) })
                     }
                 }
             }
@@ -164,18 +168,19 @@ private fun SortMenu(sort: ProductSort, onSort: (ProductSort) -> Unit) {
 }
 
 @Composable
-private fun ProductRow(item: ProductSummary, onClick: () -> Unit) {
+private fun ProductRow(item: ProductSummary, showType: Boolean, onClick: () -> Unit) {
     val p = item.product
     val details = when (p.type) {
-        ProductType.BEER -> listOfNotNull(item.beer?.style, p.abv?.let { "$it %" })
+        ProductType.BEER -> listOfNotNull(item.beer?.style, p.abv?.let { "${formatDecimal(it)} %" })
         ProductType.WHISKY -> listOfNotNull(
             item.whisky?.age?.let { "$it ans" },
             item.whisky?.caskType,
-            p.abv?.let { "$it %" },
+            p.abv?.let { "${formatDecimal(it)} %" },
         )
     }
     ListItem(
-        overlineContent = { TypeBadge(p.type) },
+        leadingContent = { ProductThumb(p.photoPath, p.type) },
+        overlineContent = if (showType) { { TypeBadge(p.type) } } else null,
         headlineContent = { Text(p.name, style = MaterialTheme.typography.titleMedium) },
         supportingContent = {
             Text(listOfNotNull(p.producer, p.region ?: p.country).plus(details).joinToString(" · "))

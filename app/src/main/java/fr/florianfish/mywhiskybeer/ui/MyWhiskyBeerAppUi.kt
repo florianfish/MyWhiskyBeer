@@ -21,7 +21,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import fr.florianfish.mywhiskybeer.ui.components.rememberFabScrollState
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -68,6 +71,9 @@ fun MyWhiskyBeerAppUi() {
     val backStack by navController.currentBackStackEntryAsState()
     val destination = backStack?.destination
     val current = topLevels.firstOrNull { tl -> destination?.hasRoute(tl.routeClass) == true }
+    val fab = rememberFabScrollState()
+    // Bouton déplié à chaque changement d'onglet
+    LaunchedEffect(current) { fab.expanded = true }
 
     Scaffold(
         topBar = {
@@ -108,6 +114,7 @@ fun MyWhiskyBeerAppUi() {
             if (current != null && current.route != CellarRoute) {
                 ExtendedFloatingActionButton(
                     onClick = { navController.navigate(TastingEditRoute()) },
+                    expanded = fab.expanded,
                     icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
                     text = { Text("Déguster") },
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -122,6 +129,8 @@ fun MyWhiskyBeerAppUi() {
         NavHost(
             navController = navController,
             startDestination = HomeRoute,
+            // Le bouton « Déguster » se réduit quand on fait défiler la liste vers le bas
+            modifier = Modifier.nestedScroll(fab.connection),
         ) {
             composable<HomeRoute> {
                 HomeScreen(
