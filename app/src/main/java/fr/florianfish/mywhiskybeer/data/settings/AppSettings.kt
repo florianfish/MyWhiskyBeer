@@ -25,6 +25,15 @@ class AppSettings @Inject constructor(
         _openFoodFactsEnabled.value = enabled
     }
 
+    private val _citySearchEnabled = MutableStateFlow(prefs.getBoolean(KEY_CITIES, true))
+    /** Suggestions de villes en ligne (Photon / OpenStreetMap) pour le lieu d'une dégustation. */
+    val citySearchEnabled: StateFlow<Boolean> = _citySearchEnabled.asStateFlow()
+
+    fun setCitySearchEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_CITIES, enabled).apply()
+        _citySearchEnabled.value = enabled
+    }
+
     private val _productSort = MutableStateFlow(
         prefs.getString(KEY_SORT, null)?.let { runCatching { ProductSort.valueOf(it) }.getOrNull() } ?: ProductSort.NAME,
     )
@@ -39,5 +48,6 @@ class AppSettings @Inject constructor(
     private companion object {
         const val KEY_OFF = "open_food_facts"
         const val KEY_SORT = "product_sort"
+        const val KEY_CITIES = "city_search"
     }
 }

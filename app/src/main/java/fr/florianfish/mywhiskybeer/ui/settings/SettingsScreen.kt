@@ -89,20 +89,29 @@ fun SettingsScreen(
             )
 
             val openFoodFacts by viewModel.openFoodFacts.collectAsStateWithLifecycle()
-            SettingsCard("Code-barres") {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Chercher sur Open Food Facts", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            "Quand un code-barres scanné n'est pas dans ton carnet, l'appli interroge la base " +
-                                "collaborative Open Food Facts pour pré-remplir le produit. C'est son seul accès à internet : " +
-                                "seul le code-barres est envoyé.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(checked = openFoodFacts, onCheckedChange = viewModel::setOpenFoodFacts)
-                }
+            val citySearch by viewModel.citySearch.collectAsStateWithLifecycle()
+            // Les deux seuls accès à internet de l'appli, chacun désactivable
+            SettingsCard("Recherches en ligne") {
+                OnlineSwitch(
+                    title = "Codes-barres sur Open Food Facts",
+                    text = "Quand un code-barres scanné n'est pas dans ton carnet, l'appli interroge la base " +
+                        "collaborative Open Food Facts pour pré-remplir le produit. Seul le code-barres est envoyé.",
+                    checked = openFoodFacts,
+                    onCheckedChange = viewModel::setOpenFoodFacts,
+                )
+                OnlineSwitch(
+                    title = "Villes pour le lieu",
+                    text = "En tapant le lieu d'une dégustation, l'appli propose des villes du monde entier " +
+                        "(Photon, données OpenStreetMap). Seul le texte tapé est envoyé. Les lieux déjà utilisés " +
+                        "sont proposés même sans connexion.",
+                    checked = citySearch,
+                    onCheckedChange = viewModel::setCitySearch,
+                )
+                Text(
+                    "Ce sont les seuls accès à internet de l'appli.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
             SettingsCard("À propos") {
@@ -241,4 +250,15 @@ private fun RestoreDialog(pending: PendingRestore, onConfirm: () -> Unit, onDism
         confirmButton = { TextButton(onClick = onConfirm) { Text("Remplacer") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler") } },
     )
+}
+
+@Composable
+private fun OnlineSwitch(title: String, text: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
 }

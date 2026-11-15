@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,15 +15,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -34,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +58,7 @@ fun TastingEditScreen(
     viewModel: TastingEditViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val placeSuggestions by viewModel.placeSuggestions.collectAsStateWithLifecycle()
     val aromas by viewModel.aromas.collectAsStateWithLifecycle()
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
 
@@ -132,8 +137,8 @@ fun TastingEditScreen(
             AromaWheel(aromas = aromas, selected = state.tasting.aromas, onAromaTap = viewModel::cycleAroma)
             SelectedAromas(aromas, state.tasting.aromas, onTap = viewModel::cycleAroma)
 
-            SectionTitle("Notes de dégustation")
-            TastingNotes(state.tasting, state.type) { transform -> viewModel.updateTasting(transform) }
+            SectionTitle("Détails")
+            TastingDetails(state.tasting, state.type, placeSuggestions) { transform -> viewModel.updateTasting(transform) }
 
             Button(
                 onClick = viewModel::save,
@@ -173,24 +178,56 @@ private fun SelectedAromas(aromas: List<AromaEntity>, selected: Map<Long, Int>, 
     }
 }
 
+/** Façons de servir une bière : seul choix proposé pour le service. */
+private val BEER_SERVICES = listOf("Pression", "Bouteille", "Canette")
+
+/**
+ * Commentaire, lieu (avec suggestions : lieux déjà utilisés puis villes en ligne) et, pour la bière
+ * seulement, le service. Nez, bouche et finale ne sont plus saisis : les valeurs déjà enregistrées
+ * sont conservées telles quelles et restent affichées sur la fiche produit.
+ */
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-private fun TastingNotes(form: TastingForm, type: ProductType, onChange: ((TastingForm) -> TastingForm) -> Unit) {
+private fun TastingDetails(
+    form: TastingForm,
+    type: ProductType,
+    placeSuggestions: List<String>,
+    onChange: ((TastingForm) -> TastingForm) -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        FormTextField(form.nose, { v -> onChange { it.copy(nose = v) } }, "Nez", singleLine = false)
-        FormTextField(form.palate, { v -> onChange { it.copy(palate = v) } }, "Bouche", singleLine = false)
-        FormTextField(form.finish, { v -> onChange { it.copy(finish = v) } }, "Finale", singleLine = false)
-        HorizontalDivider(Modifier.padding(vertical = 4.dp))
         FormTextField(form.comment, { v -> onChange { it.copy(comment = v) } }, "Commentaire", singleLine = false)
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FormTextField(
-                form.place, { v -> onChange { it.copy(place = v) } }, "Lieu", Modifier.weight(1f),
+                form.place, { v -> onChange { it.copy(place = v) } }, "Lieu (ville, bar…)",
                 capitalization = KeyboardCapitalization.Words,
             )
-            FormTextField(
-                form.servedAs, { v -> onChange { it.copy(servedAs = v) } },
-                if (type == ProductType.WHISKY) "Service (sec, eau…)" else "Service (pression…)",
-                Modifier.weight(1f),
-            )
+            if (placeSuggestions.isNotEmpty()) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    placeSuggestions.forEach { place ->
+                        SuggestionChip(
+                            onClick = { onChange { it.copy(place = place) } },
+                            icon = { Icon(Icons.Outlined.Place, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                            label = { Text(place, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        )
+                    }
+                }
+            }
+        }
+
+        if (type == ProductType.BEER) {
+            Text("Service", style = MaterialTheme.typography.labelLarge)
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                BEER_SERVICES.forEachIndexed { i, service ->
+                    val selected = form.servedAs.equals(service, ignoreCase = true)
+                    SegmentedButton(
+                        selected = selected,
+                        // Un nouvel appui sur le choix actif le retire
+                        onClick = { onChange { it.copy(servedAs = if (selected) "" else service) } },
+                        shape = SegmentedButtonDefaults.itemShape(index = i, count = BEER_SERVICES.size),
+                    ) { Text(service) }
+                }
+            }
         }
     }
 }

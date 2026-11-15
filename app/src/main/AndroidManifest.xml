@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Uniquement pour Open Food Facts (code-barres inconnu du carnet), désactivable dans Réglages -->
+    <!-- Uniquement Open Food Facts (code-barres inconnu) et Photon (villes du lieu), désactivables dans Réglages -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application

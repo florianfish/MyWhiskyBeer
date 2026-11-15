@@ -37,6 +37,11 @@ class SettingsViewModel @Inject constructor(
 
     fun setOpenFoodFacts(enabled: Boolean) = appSettings.setOpenFoodFactsEnabled(enabled)
 
+    /** Suggestions de villes en ligne pour le lieu des dégustations. */
+    val citySearch: StateFlow<Boolean> = appSettings.citySearchEnabled
+
+    fun setCitySearch(enabled: Boolean) = appSettings.setCitySearchEnabled(enabled)
+
     private val _state = MutableStateFlow(SettingsState(lastBackupAt = backupManager.lastBackupAt))
     val state: StateFlow<SettingsState> = _state.asStateFlow()
 
