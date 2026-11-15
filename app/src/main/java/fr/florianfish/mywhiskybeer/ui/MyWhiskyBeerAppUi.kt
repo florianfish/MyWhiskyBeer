@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
@@ -45,6 +46,8 @@ import fr.florianfish.mywhiskybeer.ui.product.ProductEditScreen
 import fr.florianfish.mywhiskybeer.ui.products.ProductsScreen
 import fr.florianfish.mywhiskybeer.ui.settings.SettingsScreen
 import fr.florianfish.mywhiskybeer.ui.tasting.TastingEditScreen
+import fr.florianfish.mywhiskybeer.ui.navigation.StatsRoute
+import fr.florianfish.mywhiskybeer.ui.stats.StatsScreen
 import kotlin.reflect.KClass
 
 private data class TopLevel(val route: Any, val routeClass: KClass<*>, val label: String, val icon: ImageVector)
@@ -53,6 +56,7 @@ private val topLevels = listOf(
     TopLevel(HomeRoute, HomeRoute::class, "Dégustations", Icons.Outlined.Home),
     TopLevel(ProductsRoute, ProductsRoute::class, "Carnet", Icons.AutoMirrored.Outlined.MenuBook),
     TopLevel(CellarRoute, CellarRoute::class, "Cave", Icons.Outlined.Inventory2),
+    TopLevel(StatsRoute, StatsRoute::class, "Stats", Icons.Outlined.Insights),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -125,6 +129,12 @@ fun MyWhiskyBeerAppUi() {
             }
             composable<ProductsRoute> {
                 ProductsScreen(
+                    onProductClick = { navController.navigate(ProductDetailRoute(it)) },
+                    modifier = Modifier.padding(padding),
+                )
+            }
+            composable<StatsRoute> {
+                StatsScreen(
                     onProductClick = { navController.navigate(ProductDetailRoute(it)) },
                     modifier = Modifier.padding(padding),
                 )

@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object HomeRoute
 @Serializable data object ProductsRoute
 @Serializable data object CellarRoute
+@Serializable data object StatsRoute
 
 /**
  * productId null = nouvelle dégustation d'un nouveau produit.

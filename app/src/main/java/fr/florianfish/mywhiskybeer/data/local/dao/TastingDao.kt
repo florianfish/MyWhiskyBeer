@@ -52,6 +52,14 @@ abstract class TastingDao {
     @Query("SELECT * FROM tasting WHERE productId = :productId ORDER BY date DESC")
     abstract fun observeForProduct(productId: Long): Flow<List<TastingWithProduct>>
 
+    /** Toutes les dégustations (statistiques). */
+    @Query("SELECT * FROM tasting")
+    abstract fun observeAll(): Flow<List<TastingEntity>>
+
+    /** Tous les arômes notés, toutes dégustations confondues (profil aromatique global). */
+    @Query("SELECT ta.tastingId, ta.intensity, a.* FROM tasting_aroma ta JOIN aroma a ON a.id = ta.aromaId")
+    abstract fun observeAllAromaIntensities(): Flow<List<AromaIntensity>>
+
     @Query("SELECT AVG(rating) FROM tasting WHERE productId = :productId")
     abstract fun observeAverageRating(productId: Long): Flow<Double?>
 

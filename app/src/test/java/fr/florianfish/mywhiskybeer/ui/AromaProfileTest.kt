@@ -4,7 +4,7 @@ import fr.florianfish.mywhiskybeer.data.local.AromaSeed
 import fr.florianfish.mywhiskybeer.data.local.entity.AromaEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.AromaIntensity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
-import fr.florianfish.mywhiskybeer.ui.product.aromaProfile
+import fr.florianfish.mywhiskybeer.domain.aromaProfile
 import fr.florianfish.mywhiskybeer.domain.toDecimalOrNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
