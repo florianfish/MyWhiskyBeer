@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import fr.florianfish.mywhiskybeer.data.local.entity.AromaIntensity
+import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingAromaCrossRef
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingWithProduct
@@ -47,6 +48,16 @@ abstract class TastingDao {
     @Transaction
     @Query("SELECT * FROM tasting ORDER BY date DESC LIMIT :limit")
     abstract fun observeLatest(limit: Int = 20): Flow<List<TastingWithProduct>>
+
+    /** Dernières dégustations d'un seul type de produit (filtre de l'accueil). */
+    @Transaction
+    @Query(
+        """
+        SELECT t.* FROM tasting t JOIN product p ON p.id = t.productId
+        WHERE p.type = :type ORDER BY t.date DESC LIMIT :limit
+        """,
+    )
+    abstract fun observeLatestByType(type: ProductType, limit: Int = 20): Flow<List<TastingWithProduct>>
 
     @Transaction
     @Query("SELECT * FROM tasting WHERE productId = :productId ORDER BY date DESC")
