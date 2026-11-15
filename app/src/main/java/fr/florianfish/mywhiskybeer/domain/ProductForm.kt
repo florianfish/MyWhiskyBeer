@@ -2,6 +2,7 @@ package fr.florianfish.mywhiskybeer.domain
 
 import fr.florianfish.mywhiskybeer.data.local.entity.PeatLevel
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
+import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 
 /**
  * Champs d'un nouveau produit, saisis sous forme de texte (convertis à l'enregistrement).
@@ -53,6 +54,25 @@ data class ProductForm(
     fun hasDetails(): Boolean =
         listOf(country, region, abv, style, ibu, color, category, age, caskType).any { it.isNotBlank() } || caskStrength
 }
+
+/** Formulaire pré-rempli avec un produit existant, pour le modifier. */
+fun ProductWithDetails.toForm(): ProductForm = ProductForm(
+    type = product.type,
+    name = product.name,
+    producer = product.producer.orEmpty(),
+    country = product.country.orEmpty(),
+    region = product.region.orEmpty(),
+    abv = product.abv?.let(::formatDecimal).orEmpty(),
+    barcode = product.barcode.orEmpty(),
+    style = beer?.style.orEmpty(),
+    ibu = beer?.ibu?.toString().orEmpty(),
+    color = beer?.color.orEmpty(),
+    category = whisky?.category.orEmpty(),
+    age = whisky?.age?.toString().orEmpty(),
+    caskType = whisky?.caskType.orEmpty(),
+    peat = whisky?.peat ?: PeatLevel.NONE,
+    caskStrength = whisky?.caskStrength ?: false,
+)
 
 /** « 46.0 » → « 46 », « 5.8 » → « 5,8 ». */
 fun formatDecimal(value: Double): String =

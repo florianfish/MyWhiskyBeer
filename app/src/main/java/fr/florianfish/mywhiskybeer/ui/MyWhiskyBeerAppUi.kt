@@ -28,6 +28,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import fr.florianfish.mywhiskybeer.ui.bottle.BottleEditScreen
 import fr.florianfish.mywhiskybeer.ui.cellar.CellarScreen
 import fr.florianfish.mywhiskybeer.ui.home.HomeScreen
@@ -35,10 +36,12 @@ import fr.florianfish.mywhiskybeer.ui.navigation.BottleEditRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.CellarRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.HomeRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductDetailRoute
+import fr.florianfish.mywhiskybeer.ui.navigation.ProductEditRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.SettingsRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import fr.florianfish.mywhiskybeer.ui.product.ProductDetailScreen
+import fr.florianfish.mywhiskybeer.ui.product.ProductEditScreen
 import fr.florianfish.mywhiskybeer.ui.products.ProductsScreen
 import fr.florianfish.mywhiskybeer.ui.settings.SettingsScreen
 import fr.florianfish.mywhiskybeer.ui.tasting.TastingEditScreen
@@ -133,12 +136,18 @@ fun MyWhiskyBeerAppUi() {
                     modifier = Modifier.padding(padding),
                 )
             }
-            composable<TastingEditRoute> {
+            composable<TastingEditRoute> { entry ->
+                val editing = entry.toRoute<TastingEditRoute>().tastingId != null
                 TastingEditScreen(
                     onClose = { navController.popBackStack() },
                     onSaved = { productId ->
-                        navController.navigate(ProductDetailRoute(productId)) {
-                            popUpTo<TastingEditRoute> { inclusive = true }
+                        if (editing) {
+                            // Modification depuis la fiche produit : on y revient
+                            navController.popBackStack()
+                        } else {
+                            navController.navigate(ProductDetailRoute(productId)) {
+                                popUpTo<TastingEditRoute> { inclusive = true }
+                            }
                         }
                     },
                 )
@@ -148,7 +157,12 @@ fun MyWhiskyBeerAppUi() {
                     onBack = { navController.popBackStack() },
                     onTasteAgain = { navController.navigate(TastingEditRoute(it)) },
                     onEditStock = { navController.navigate(BottleEditRoute(productId = it)) },
+                    onEditProduct = { navController.navigate(ProductEditRoute(it)) },
+                    onEditTasting = { productId, tastingId -> navController.navigate(TastingEditRoute(productId, tastingId)) },
                 )
+            }
+            composable<ProductEditRoute> {
+                ProductEditScreen(onClose = { navController.popBackStack() })
             }
             composable<SettingsRoute> {
                 SettingsScreen(onBack = { navController.popBackStack() })

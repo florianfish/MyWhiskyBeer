@@ -72,4 +72,14 @@ abstract class TastingDao {
 
     @Query("SELECT COUNT(*) FROM tasting")
     abstract fun observeCount(): Flow<Int>
+
+    @Query("SELECT * FROM tasting WHERE id = :id")
+    abstract suspend fun getById(id: Long): TastingEntity?
+
+    /** Arômes cochés d'une dégustation, avec leur intensité (pour la modifier). */
+    @Query("SELECT * FROM tasting_aroma WHERE tastingId = :tastingId")
+    abstract suspend fun aromaRefs(tastingId: Long): List<TastingAromaCrossRef>
+
+    @Query("SELECT COUNT(*) FROM tasting WHERE photoPath = :path")
+    abstract suspend fun countPhotoUses(path: String): Int
 }

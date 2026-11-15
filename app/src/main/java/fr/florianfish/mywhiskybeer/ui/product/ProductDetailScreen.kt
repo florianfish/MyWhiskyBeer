@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -77,6 +78,8 @@ fun ProductDetailScreen(
     onBack: () -> Unit,
     onTasteAgain: (productId: Long) -> Unit,
     onEditStock: (productId: Long) -> Unit,
+    onEditProduct: (productId: Long) -> Unit,
+    onEditTasting: (productId: Long, tastingId: Long) -> Unit,
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -98,6 +101,11 @@ fun ProductDetailScreen(
                 actions = {
                     IconButton(onClick = { menuOpen = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = "Plus") }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Modifier le produit") },
+                            leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                            onClick = { menuOpen = false; state.product?.let { onEditProduct(it.product.id) } },
+                        )
                         DropdownMenuItem(
                             text = { Text("Supprimer le produit") },
                             leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
@@ -155,7 +163,12 @@ fun ProductDetailScreen(
                     )
                 }
                 items(state.tastings, key = { it.tasting.id }) { item ->
-                    TastingItem(item, onDelete = { tastingToDelete = item }, modifier = Modifier.padding(horizontal = 16.dp))
+                    TastingItem(
+                        item,
+                        onEdit = { onEditTasting(item.product.id, item.tasting.id) },
+                        onDelete = { tastingToDelete = item },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
                 }
             }
         }
@@ -337,7 +350,7 @@ private fun Section(title: String, content: @Composable () -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TastingItem(item: TastingWithProduct, onDelete: () -> Unit, modifier: Modifier = Modifier) {
+private fun TastingItem(item: TastingWithProduct, onEdit: () -> Unit, onDelete: () -> Unit, modifier: Modifier = Modifier) {
     val t = item.tasting
     val type = item.product.type
     Card(
@@ -358,6 +371,9 @@ private fun TastingItem(item: TastingWithProduct, onDelete: () -> Unit, modifier
                         t.servedAs,
                     ).joinToString(" · ")
                     Text(meta, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Outlined.Edit, contentDescription = "Modifier la dégustation")
                 }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Outlined.Delete, contentDescription = "Supprimer la dégustation")

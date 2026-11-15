@@ -8,8 +8,11 @@ import kotlinx.serialization.Serializable
 @Serializable data object ProductsRoute
 @Serializable data object CellarRoute
 
-/** productId null = nouvelle dégustation d'un nouveau produit. */
-@Serializable data class TastingEditRoute(val productId: Long? = null)
+/**
+ * productId null = nouvelle dégustation d'un nouveau produit.
+ * tastingId renseigné = modification d'une dégustation existante.
+ */
+@Serializable data class TastingEditRoute(val productId: Long? = null, val tastingId: Long? = null)
 
 @Serializable data class ProductDetailRoute(val productId: Long)
 
@@ -20,3 +23,6 @@ import kotlinx.serialization.Serializable
 @Serializable data class BottleEditRoute(val productId: Long? = null, val wishlist: Boolean = false)
 
 @Serializable data object SettingsRoute
+
+/** Modification des informations d'un produit (pas de ses dégustations). */
+@Serializable data class ProductEditRoute(val productId: Long)
