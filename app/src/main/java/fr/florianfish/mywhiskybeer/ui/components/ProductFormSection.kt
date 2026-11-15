@@ -288,7 +288,7 @@ internal fun ProductDetailsFields(form: ProductForm, onFormChange: ((ProductForm
         }
         when (form.type) {
             ProductType.BEER -> {
-                BeerStylePicker(form.style) { v -> onFormChange { it.copy(style = v) } }
+                BeerStylePicker(form.style, onStyleChange = { v -> onFormChange { it.copy(style = v) } })
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FormTextField(form.abv, { v -> onFormChange { it.copy(abv = v) } }, "Degré %", Modifier.weight(1f), KeyboardType.Decimal)
                     FormTextField(form.ibu, { v -> onFormChange { it.copy(ibu = v) } }, "IBU", Modifier.weight(1f), KeyboardType.Number)

@@ -81,7 +81,7 @@ abstract class AppDatabase : RoomDatabase() {
                 used.forEachIndexed { i, style ->
                     db.execSQL(
                         "INSERT OR IGNORE INTO beer_style (name, position) VALUES (?, ?)",
-                        arrayOf(style, BeerStyles.ALL.size + i),
+                        arrayOf<Any>(style, BeerStyles.ALL.size + i),
                     )
                 }
             }
@@ -92,7 +92,7 @@ abstract class AppDatabase : RoomDatabase() {
         /** Liste de styles par défaut (création de la base, migration). */
         fun seedBeerStyles(db: SupportSQLiteDatabase) {
             BeerStyles.ALL.forEachIndexed { i, style ->
-                db.execSQL("INSERT OR IGNORE INTO beer_style (name, position) VALUES (?, ?)", arrayOf(style, i))
+                db.execSQL("INSERT OR IGNORE INTO beer_style (name, position) VALUES (?, ?)", arrayOf<Any>(style, i))
             }
         }
     }
