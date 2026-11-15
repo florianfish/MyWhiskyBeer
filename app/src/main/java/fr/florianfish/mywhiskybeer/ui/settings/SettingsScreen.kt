@@ -1,5 +1,7 @@
 package fr.florianfish.mywhiskybeer.ui.settings
 
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.foundation.clickable
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -53,6 +55,7 @@ import fr.florianfish.mywhiskybeer.ui.theme.RatingTextStyle
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onBeerStyles: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val version = AppVersion.parse(BuildConfig.VERSION_NAME, BuildConfig.DEBUG, BuildConfig.COMMIT)
@@ -80,6 +83,23 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            SettingsCard("Carnet") {
+                Row(
+                    Modifier.fillMaxWidth().clickable(onClick = onBeerStyles).padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Styles de bière", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Ajouter ou retirer des styles (IPA, NEIPA, stout…) proposés dans les fiches bière.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null)
+                }
+            }
+
             BackupCard(
                 state = state,
                 suggestedFileName = viewModel::suggestedFileName,

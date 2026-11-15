@@ -25,5 +25,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable data object SettingsRoute
 
+/** Réglages › Styles de bière. */
+@Serializable data object BeerStylesRoute
+
 /** Modification des informations d'un produit (pas de ses dégustations). */
 @Serializable data class ProductEditRoute(val productId: Long)

@@ -1,5 +1,7 @@
 package fr.florianfish.mywhiskybeer.ui.products
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,14 +45,17 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductSummary
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
+import fr.florianfish.mywhiskybeer.domain.ProductListing
 import fr.florianfish.mywhiskybeer.domain.ProductSort
 import fr.florianfish.mywhiskybeer.domain.RatingScale
 import fr.florianfish.mywhiskybeer.ui.components.EmptyState
 import fr.florianfish.mywhiskybeer.ui.components.GlassGauge
+import fr.florianfish.mywhiskybeer.ui.components.StyleFilterChips
 import fr.florianfish.mywhiskybeer.ui.components.TypeBadge
 import fr.florianfish.mywhiskybeer.ui.components.TypeFilterChips
 import fr.florianfish.mywhiskybeer.ui.theme.accent
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProductsScreen(
     onProductClick: (Long) -> Unit,
@@ -61,6 +66,7 @@ fun ProductsScreen(
     val query by viewModel.query.collectAsStateWithLifecycle()
     val filter by viewModel.filter.collectAsStateWithLifecycle()
     val sort by viewModel.sort.collectAsStateWithLifecycle()
+    val style by viewModel.style.collectAsStateWithLifecycle()
     val focus = LocalFocusManager.current
 
     Column(modifier.fillMaxSize()) {
@@ -94,17 +100,38 @@ fun ProductsScreen(
             Spacer(Modifier.weight(1f))
             SortMenu(sort, onSort = viewModel::setSort)
         }
+        if (filter == ProductType.BEER) {
+            StyleFilterChips(state.beerStyles, style, viewModel::setStyle, Modifier.padding(bottom = 4.dp))
+        }
 
         when {
             state.loading -> Unit
             state.total == 0 -> EmptyState(title = "Carnet vide", message = "Les produits notés apparaîtront ici.")
             state.products.isEmpty() -> EmptyState(
                 title = "Aucun résultat",
-                message = if (query.isNotBlank()) "Rien ne correspond à « ${query.trim()} »." else "Aucun produit de ce type.",
+                message = when {
+                    query.isNotBlank() -> "Rien ne correspond à « ${query.trim()} »."
+                    style != null -> "Aucune bière de style $style."
+                    else -> "Aucun produit de ce type."
+                },
             )
             else -> LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
-                items(state.products, key = { it.product.id }) { item ->
-                    ProductRow(item, onClick = { onProductClick(item.product.id) })
+                if (sort == ProductSort.STYLE) {
+                    // Sections par style (bière) ou catégorie (whisky), dans l'ordre du tri
+                    state.products
+                        .groupBy { "${it.product.type}|${ProductListing.groupKey(it)}" }
+                        .forEach { (key, items) ->
+                            stickyHeader(key = key) {
+                                GroupHeader(ProductListing.groupKey(items.first()), items.size, items.first().product.type)
+                            }
+                            items(items, key = { it.product.id }) { item ->
+                                ProductRow(item, onClick = { onProductClick(item.product.id) })
+                            }
+                        }
+                } else {
+                    items(state.products, key = { it.product.id }) { item ->
+                        ProductRow(item, onClick = { onProductClick(item.product.id) })
+                    }
                 }
             }
         }
@@ -179,4 +206,22 @@ private fun ProductRow(item: ProductSummary, onClick: () -> Unit) {
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
         modifier = Modifier.clickable(onClick = onClick),
     )
+}
+
+@Composable
+private fun GroupHeader(title: String, count: Int, type: ProductType) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, style = MaterialTheme.typography.titleLarge, color = type.accent(), modifier = Modifier.weight(1f))
+        Text(
+            if (count > 1) "$count produits" else "1 produit",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }

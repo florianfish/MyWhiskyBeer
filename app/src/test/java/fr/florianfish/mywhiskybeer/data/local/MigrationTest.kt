@@ -7,6 +7,7 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import fr.florianfish.mywhiskybeer.domain.BeerStyles
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -82,6 +83,42 @@ class MigrationTest {
      * Depuis la toute première version, la chaîne complète des migrations doit mener à la version
      * actuelle, avec un schéma identique à celui des entités (Room le vérifie à l'ouverture).
      */
+    @Test
+    fun migration2Vers3RameneLesStylesALaListe() {
+        helper.createDatabase(dbName, 2).use { db ->
+            db.execSQL("INSERT INTO product (id, type, name, tags, created_at) VALUES (1, 'BEER', 'Trouble', '', 1000)")
+            db.execSQL("INSERT INTO product (id, type, name, tags, created_at) VALUES (2, 'BEER', 'Rare', '', 2000)")
+            db.execSQL("INSERT INTO product (id, type, name, tags, created_at) VALUES (3, 'BEER', 'Vide', '', 3000)")
+            db.execSQL("INSERT INTO beer_details (productId, style, ibu) VALUES (1, 'Hazy IPA', 40)")
+            db.execSQL("INSERT INTO beer_details (productId, style) VALUES (2, 'Grisette')")
+            db.execSQL("INSERT INTO beer_details (productId, style) VALUES (3, '  ')")
+            db.execSQL("INSERT INTO tasting (id, productId, date, rating) VALUES (10, 1, 3000, 80)")
+        }
+
+        helper.runMigrationsAndValidate(dbName, 3, true, AppDatabase.MIGRATION_2_3).use { db ->
+            fun style(id: Int): String? = db.query("SELECT style FROM beer_details WHERE productId = $id").use { c ->
+                assertTrue(c.moveToFirst())
+                if (c.isNull(0)) null else c.getString(0)
+            }
+            assertEquals("NEIPA", style(1))
+            assertEquals("Grisette", style(2))
+            assertEquals(null, style(3))
+            db.query("SELECT ibu FROM beer_details WHERE productId = 1").use { c ->
+                assertTrue(c.moveToFirst())
+                assertEquals(40, c.getInt(0))
+            }
+            db.query("SELECT rating FROM tasting WHERE id = 10").use { c ->
+                assertTrue(c.moveToFirst())
+                assertEquals(80, c.getInt(0))
+            }
+            // Liste par défaut + styles déjà utilisés hors liste
+            val styles = db.query("SELECT name FROM beer_style ORDER BY position").use { c ->
+                buildList { while (c.moveToNext()) add(c.getString(0)) }
+            }
+            assertEquals(BeerStyles.ALL + "Grisette", styles)
+        }
+    }
+
     @Test
     fun toutesLesMigrationsMenentALaVersionActuelle() {
         helper.createDatabase(dbName, 1).close()

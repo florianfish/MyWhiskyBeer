@@ -19,8 +19,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DocumentScanner
@@ -30,6 +32,7 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -46,6 +49,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -78,6 +82,10 @@ import fr.florianfish.mywhiskybeer.data.local.entity.PeatLevel
 import fr.florianfish.mywhiskybeer.data.local.entity.ProducerInfo
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import fr.florianfish.mywhiskybeer.domain.BeerStyles
+import fr.florianfish.mywhiskybeer.ui.styles.BeerStylesViewModel
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.ui.theme.accent
 import java.io.File
@@ -280,7 +288,7 @@ internal fun ProductDetailsFields(form: ProductForm, onFormChange: ((ProductForm
         }
         when (form.type) {
             ProductType.BEER -> {
-                FormTextField(form.style, { v -> onFormChange { it.copy(style = v) } }, "Style (IPA, stout…)")
+                BeerStylePicker(form.style) { v -> onFormChange { it.copy(style = v) } }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     FormTextField(form.abv, { v -> onFormChange { it.copy(abv = v) } }, "Degré %", Modifier.weight(1f), KeyboardType.Decimal)
                     FormTextField(form.ibu, { v -> onFormChange { it.copy(ibu = v) } }, "IBU", Modifier.weight(1f), KeyboardType.Number)
@@ -451,5 +459,71 @@ fun ProducerField(
                 }
             }
         }
+    }
+}
+
+/**
+ * Choix du style de bière : styles courants en pastilles, liste complète dans une fenêtre,
+ * et saisie libre pour un style qui n'y est pas. Un nouvel appui sur le style choisi le retire.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun BeerStylePicker(
+    style: String,
+    onStyleChange: (String) -> Unit,
+    stylesViewModel: BeerStylesViewModel = hiltViewModel(),
+) {
+    // Liste gérée dans Réglages › Styles de bière
+    val styles by stylesViewModel.names.collectAsStateWithLifecycle()
+    var showAll by remember { mutableStateOf(false) }
+    val current = BeerStyles.canonical(style)
+    // Styles courants encore dans la liste ; le style choisi reste visible même s'il n'en fait pas partie
+    val chips = (BeerStyles.POPULAR.filter { it in styles } + listOfNotNull(current)).distinct()
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Style", style = MaterialTheme.typography.labelLarge)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            chips.forEach { s ->
+                val selected = s == current
+                FilterChip(
+                    selected = selected,
+                    onClick = { onStyleChange(if (selected) "" else s) },
+                    label = { Text(s) },
+                )
+            }
+            AssistChip(onClick = { showAll = true }, label = { Text("Autres styles…") })
+        }
+    }
+
+    if (showAll) {
+        var custom by remember { mutableStateOf(if (current != null && current !in styles) current else "") }
+        AlertDialog(
+            onDismissRequest = { showAll = false },
+            title = { Text("Style de bière") },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    styles.forEach { s ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { onStyleChange(s); showAll = false }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = s == current, onClick = { onStyleChange(s); showAll = false })
+                            Text(s)
+                        }
+                    }
+                    FormTextField(custom, { custom = it }, "Autre style", capitalization = KeyboardCapitalization.Sentences)
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { onStyleChange(custom.trim()); showAll = false },
+                    enabled = custom.isNotBlank(),
+                ) { Text("Utiliser") }
+            },
+            dismissButton = { TextButton(onClick = { showAll = false }) { Text("Fermer") } },
+        )
     }
 }

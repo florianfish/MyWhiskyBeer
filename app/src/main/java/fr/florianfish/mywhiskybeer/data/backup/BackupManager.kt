@@ -52,6 +52,7 @@ class BackupManager @Inject constructor(
                     aromasById[ref.aromaId]?.let { a -> AromaRef(ref.tastingId, a.productType, a.family, a.name, ref.intensity) }
                 },
                 cellar = dao.cellar(),
+                beerStyles = dao.beerStyles(),
             )
         }
         // Chemins absolus → noms de fichiers dans le zip
@@ -112,12 +113,14 @@ class BackupManager @Inject constructor(
                 dao.clearBeerDetails()
                 dao.clearWhiskyDetails()
                 dao.clearProducts()
+                dao.clearBeerStyles()
 
                 dao.insertProducts(data.products)
                 dao.insertBeerDetails(data.beerDetails)
                 dao.insertWhiskyDetails(data.whiskyDetails)
                 dao.insertTastings(data.tastings)
                 dao.insertCellar(data.cellar)
+                dao.insertBeerStyles(BackupCodec.beerStyles(data))
 
                 // Arômes : retrouvés par type/famille/nom, ajoutés au référentiel s'ils n'y sont plus
                 val known = dao.aromas().associateBy { Triple(it.productType, it.family, it.name) }.toMutableMap()

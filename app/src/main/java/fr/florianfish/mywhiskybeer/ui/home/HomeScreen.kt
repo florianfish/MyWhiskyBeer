@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.ui.components.EmptyState
 import fr.florianfish.mywhiskybeer.ui.components.TastingCard
+import fr.florianfish.mywhiskybeer.ui.components.StyleFilterChips
 import fr.florianfish.mywhiskybeer.ui.components.TypeFilterChips
 
 @Composable
@@ -46,6 +47,11 @@ fun HomeScreen(
             Column(modifier.fillMaxSize()) {
                 Row(Modifier.padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TypeFilterChips(filter, viewModel::setFilter)
+                }
+                if (filter == ProductType.BEER) {
+                    val styles by viewModel.beerStyles.collectAsStateWithLifecycle()
+                    val style by viewModel.style.collectAsStateWithLifecycle()
+                    StyleFilterChips(styles, style, viewModel::setStyle, Modifier.padding(bottom = 4.dp))
                 }
                 if (s.latest.isEmpty()) {
                     EmptyState(

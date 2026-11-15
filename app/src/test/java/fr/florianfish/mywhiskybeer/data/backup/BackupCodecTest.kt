@@ -1,6 +1,8 @@
 package fr.florianfish.mywhiskybeer.data.backup
 
 import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
+import fr.florianfish.mywhiskybeer.data.local.entity.BeerStyleEntity
+import fr.florianfish.mywhiskybeer.domain.BeerStyles
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarItemEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarStatus
 import fr.florianfish.mywhiskybeer.data.local.entity.PeatLevel
@@ -77,5 +79,22 @@ class BackupCodecTest {
         assertFalse(BackupCodec.isSafePhotoName("../evil.jpg"))
         assertFalse(BackupCodec.isSafePhotoName("dir/a.jpg"))
         assertFalse(BackupCodec.isSafePhotoName(".."))
+    }
+
+    @Test
+    fun oldBackupGetsDefaultStylesPlusUsedOnes() {
+        val old = sample.copy(
+            beerDetails = listOf(BeerDetailsEntity(productId = 2, style = "Grisette"), BeerDetailsEntity(productId = 3, style = "IPA")),
+            beerStyles = emptyList(),
+        )
+        val styles = BackupCodec.beerStyles(old).map { it.name }
+        assertEquals(BeerStyles.ALL + "Grisette", styles)
+    }
+
+    @Test
+    fun backupStylesAreKept() {
+        val data = sample.copy(beerStyles = listOf(BeerStyleEntity("IPA", 0), BeerStyleEntity("Stout", 1)))
+        assertEquals(listOf("IPA", "Stout", "Blonde"), BackupCodec.beerStyles(data).map { it.name })
+        assertEquals(data, BackupCodec.decode(BackupCodec.encode(data)))
     }
 }

@@ -22,6 +22,8 @@ data class ProductsState(
     /** Nombre total de produits du carnet (pour distinguer « carnet vide » et « aucun résultat »). */
     val total: Int = 0,
     val loading: Boolean = true,
+    /** Styles présents parmi les bières (avec leur nombre), pour le filtre par style. */
+    val beerStyles: List<Pair<String, Int>> = emptyList(),
 )
 
 @HiltViewModel
@@ -37,9 +39,22 @@ class ProductsViewModel @Inject constructor(
         .map { name -> name?.let(ProductType::valueOf) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
     val sort: StateFlow<ProductSort> = settings.productSort
+    /** Style de bière filtré (seulement avec le filtre Bière). */
+    val style: StateFlow<String?> = savedStateHandle.getStateFlow<String?>(KEY_STYLE, null)
 
-    val state: StateFlow<ProductsState> = combine(productDao.observeSummaries(), query, filter, sort) { all, q, type, s ->
-        ProductsState(products = ProductListing.apply(all, q, type, s), total = all.size, loading = false)
+    val state: StateFlow<ProductsState> = combine(
+        productDao.observeSummaries(),
+        query,
+        filter,
+        sort,
+        style,
+    ) { all, q, type, s, st ->
+        ProductsState(
+            products = ProductListing.apply(all, q, type, s, style = st.takeIf { type == ProductType.BEER }),
+            total = all.size,
+            loading = false,
+            beerStyles = ProductListing.beerStyles(all),
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProductsState())
 
     fun setQuery(value: String) {
@@ -48,6 +63,11 @@ class ProductsViewModel @Inject constructor(
 
     fun setFilter(type: ProductType?) {
         savedStateHandle[KEY_TYPE] = type?.name
+        if (type != ProductType.BEER) savedStateHandle[KEY_STYLE] = null
+    }
+
+    fun setStyle(value: String?) {
+        savedStateHandle[KEY_STYLE] = value
     }
 
     fun setSort(value: ProductSort) = settings.setProductSort(value)
@@ -55,5 +75,6 @@ class ProductsViewModel @Inject constructor(
     private companion object {
         const val KEY_QUERY = "query"
         const val KEY_TYPE = "type"
+        const val KEY_STYLE = "style"
     }
 }

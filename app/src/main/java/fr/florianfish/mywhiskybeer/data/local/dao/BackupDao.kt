@@ -2,9 +2,11 @@ package fr.florianfish.mywhiskybeer.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import fr.florianfish.mywhiskybeer.data.local.entity.AromaEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
+import fr.florianfish.mywhiskybeer.data.local.entity.BeerStyleEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarItemEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingAromaCrossRef
@@ -21,6 +23,7 @@ interface BackupDao {
     @Query("SELECT * FROM tasting_aroma") suspend fun tastingAromas(): List<TastingAromaCrossRef>
     @Query("SELECT * FROM aroma") suspend fun aromas(): List<AromaEntity>
     @Query("SELECT * FROM cellar_item") suspend fun cellar(): List<CellarItemEntity>
+    @Query("SELECT * FROM beer_style") suspend fun beerStyles(): List<BeerStyleEntity>
 
     // Suppression dans l'ordre des dépendances (sans compter sur les cascades)
     @Query("DELETE FROM tasting_aroma") suspend fun clearTastingAromas()
@@ -29,6 +32,7 @@ interface BackupDao {
     @Query("DELETE FROM beer_details") suspend fun clearBeerDetails()
     @Query("DELETE FROM whisky_details") suspend fun clearWhiskyDetails()
     @Query("DELETE FROM product") suspend fun clearProducts()
+    @Query("DELETE FROM beer_style") suspend fun clearBeerStyles()
 
     @Insert suspend fun insertProducts(items: List<ProductEntity>)
     @Insert suspend fun insertBeerDetails(items: List<BeerDetailsEntity>)
@@ -37,4 +41,5 @@ interface BackupDao {
     @Insert suspend fun insertTastingAromas(items: List<TastingAromaCrossRef>)
     @Insert suspend fun insertCellar(items: List<CellarItemEntity>)
     @Insert suspend fun insertAroma(aroma: AromaEntity): Long
+    @Insert(onConflict = OnConflictStrategy.IGNORE) suspend fun insertBeerStyles(items: List<BeerStyleEntity>)
 }
