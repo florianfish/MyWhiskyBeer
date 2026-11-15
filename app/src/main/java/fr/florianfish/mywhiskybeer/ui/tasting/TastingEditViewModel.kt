@@ -23,10 +23,11 @@ import fr.florianfish.mywhiskybeer.data.ocr.LabelScanner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoCleaner
 import fr.florianfish.mywhiskybeer.data.place.CitySearch
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
-import fr.florianfish.mywhiskybeer.domain.LabelParser
-import fr.florianfish.mywhiskybeer.domain.PlaceSuggestions
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.domain.blankToNull
+// Suggestions du lieu
+import fr.florianfish.mywhiskybeer.domain.LabelParser
+import fr.florianfish.mywhiskybeer.domain.PlaceSuggestions
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
