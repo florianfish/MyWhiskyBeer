@@ -32,9 +32,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.ui.components.FormTextField
 import fr.florianfish.mywhiskybeer.ui.components.PhotoSection
+import fr.florianfish.mywhiskybeer.ui.components.ProducerField
 import fr.florianfish.mywhiskybeer.ui.components.ProductDetailsFields
 import fr.florianfish.mywhiskybeer.ui.components.TypeBadge
 
@@ -46,6 +46,7 @@ fun ProductEditScreen(
     viewModel: ProductEditViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val producerSuggestions by viewModel.producerSuggestions.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.saved.collect { onClose() } }
 
     Scaffold(
@@ -81,12 +82,7 @@ fun ProductEditScreen(
                 label = "Nom",
                 capitalization = KeyboardCapitalization.Words,
             )
-            FormTextField(
-                value = form.producer,
-                onValueChange = { v -> viewModel.updateForm { it.copy(producer = v) } },
-                label = if (form.type == ProductType.BEER) "Brasserie" else "Distillerie",
-                capitalization = KeyboardCapitalization.Words,
-            )
+            ProducerField(form, producerSuggestions, viewModel::updateForm, viewModel::pickProducer)
             ProductDetailsFields(form, viewModel::updateForm)
 
             Text("Photo", style = MaterialTheme.typography.titleLarge)

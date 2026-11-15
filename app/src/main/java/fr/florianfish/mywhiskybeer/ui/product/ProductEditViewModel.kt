@@ -10,18 +10,25 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import fr.florianfish.mywhiskybeer.data.local.AppDatabase
 import fr.florianfish.mywhiskybeer.data.local.ProductWriter
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
+import fr.florianfish.mywhiskybeer.data.local.entity.ProducerInfo
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.photo.PhotoCleaner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
+import fr.florianfish.mywhiskybeer.domain.ProducerSuggestions
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.domain.toForm
 import fr.florianfish.mywhiskybeer.ui.navigation.ProductEditRoute
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -51,6 +58,15 @@ class ProductEditViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(ProductEditState())
     val state: StateFlow<ProductEditState> = _state.asStateFlow()
+
+    /** Distilleries / brasseries déjà connues qui correspondent au producteur saisi. */
+    val producerSuggestions: StateFlow<List<ProducerInfo>> = combine(
+        productDao.observeProducerInfos(),
+        _state.map { it.form.type to it.form.producer }.distinctUntilChanged(),
+    ) { known, (type, typed) -> ProducerSuggestions.match(known, type, typed) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun pickProducer(info: ProducerInfo) = updateForm { it.withProducer(info) }
 
     private val _saved = Channel<Unit>(Channel.BUFFERED)
     val saved = _saved.receiveAsFlow()
