@@ -141,3 +141,16 @@ val verifierSchemasRoom by tasks.registering {
     }
 }
 tasks.matching { it.name == "testDebugUnitTest" }.configureEach { dependsOn(verifierSchemasRoom) }
+
+// TEMPORAIRE : imprime les schémas Room dans le log de la CI (avant la vérification)
+val imprimerSchemas by tasks.registering {
+    dependsOn("kspDebugKotlin")
+    doLast {
+        fileTree("schemas").files.sorted().forEach { f ->
+            println("=====SCHEMA " + f.relativeTo(projectDir))
+            println(f.readText())
+            println("=====FIN")
+        }
+    }
+}
+verifierSchemasRoom { dependsOn(imprimerSchemas) }
