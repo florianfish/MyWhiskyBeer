@@ -14,5 +14,7 @@ jobs:
       contents: write        # pré-release « debug »
       pull-requests: write   # commentaire sur les PR
     with:
-      apk-name: MyWhiskyBeer
-      gradle-tasks: assembleDebug testDebugUnitTest
+      apk-name: MyWhiskyBeer-verif-release
+      gradle-tasks: assembleRelease
+      apk-path: app/build/outputs/apk/release/app-release.apk
+      debug-release: false
