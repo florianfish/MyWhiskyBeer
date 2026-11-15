@@ -98,12 +98,15 @@ private fun StatsContent(report: StatsReport, type: ProductType?, accent: Color,
             }
         }
 
-        item {
-            StatsCard("Profil aromatique") {
-                when {
-                    type == null -> Hint("Choisis Whisky ou Bière : les familles d'arômes ne sont pas les mêmes.")
-                    report.aromaProfile.isEmpty() -> Hint("Aucun arôme noté pour l'instant.")
-                    else -> AromaRadar(report.aromaProfile, color = accent)
+        // Pas de profil sur « Tout » : les familles d'arômes diffèrent entre bière et whisky
+        if (type != null) {
+            item {
+                StatsCard("Profil aromatique") {
+                    if (report.aromaProfile.isEmpty()) {
+                        Hint("Aucun arôme noté pour l'instant.")
+                    } else {
+                        AromaRadar(report.aromaProfile, color = accent)
+                    }
                 }
             }
         }
@@ -239,7 +242,7 @@ private fun GroupCard(section: GroupSection, accent: Color, format: (Int) -> Str
 private fun Countries(countries: List<Pair<String, Int>>) {
     StatsCard("Pays goûtés") {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            countries.forEach { (name, count) -> AromaTag(if (count > 1) "$name · $count" else name) }
+            countries.forEach { (name, count) -> AromaTag("$name · $count") }
         }
     }
 }

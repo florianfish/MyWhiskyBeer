@@ -64,8 +64,10 @@ fun HomeScreen(
                         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
+                        // Type affiché seulement si la liste mélange bières et whiskies (le liseré garde la couleur)
+                        val mixed = s.latest.map { it.product.type }.distinct().size > 1
                         items(s.latest, key = { it.tasting.id }) { item ->
-                            TastingCard(item = item, onClick = { onTastingClick(item.product.id) })
+                            TastingCard(item = item, showType = mixed, onClick = { onTastingClick(item.product.id) })
                         }
                     }
                 }
