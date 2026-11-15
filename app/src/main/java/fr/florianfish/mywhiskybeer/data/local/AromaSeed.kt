@@ -31,6 +31,7 @@ object AromaSeed {
         override fun onCreate(db: SupportSQLiteDatabase) {
             insertAll(db, ProductType.WHISKY, whisky)
             insertAll(db, ProductType.BEER, beer)
+            AppDatabase.seedBeerStyles(db) // liste de styles de bière par défaut
         }
     }
 

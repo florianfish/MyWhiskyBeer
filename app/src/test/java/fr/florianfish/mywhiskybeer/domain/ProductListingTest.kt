@@ -91,4 +91,26 @@ class ProductListingTest {
             names(ProductListing.apply(all, "", null, ProductSort.ADDED)),
         )
     }
+
+    @Test
+    fun filterByStyleIgnoresVariants() {
+        val list = listOf(beer(1, "A", "NEIPA"), beer(2, "B", "Hazy IPA"), beer(3, "C", "Stout"), whisky(4, "W"))
+        assertEquals(listOf("A", "B"), names(ProductListing.apply(list, "", ProductType.BEER, ProductSort.NAME, style = "NEIPA")))
+    }
+
+    @Test
+    fun sortByStyleGroupsInListOrder() {
+        val list = listOf(
+            beer(1, "Noire", "Stout", avg = 80.0),
+            beer(2, "Sans style"),
+            beer(3, "Trouble", "NEIPA", avg = 70.0),
+            beer(4, "Simple", "IPA", avg = 60.0),
+            beer(5, "Trouble 2", "Hazy IPA", avg = 90.0),
+        )
+        val sorted = ProductListing.apply(list, "", ProductType.BEER, ProductSort.STYLE)
+        // IPA, puis NEIPA (meilleure note d'abord), Stout, et « non renseigné » à la fin
+        assertEquals(listOf("Simple", "Trouble 2", "Trouble", "Noire", "Sans style"), names(sorted))
+        assertEquals("Style non renseigné", ProductListing.groupKey(sorted.last()))
+        assertEquals(listOf("IPA" to 1, "NEIPA" to 2, "Stout" to 1), ProductListing.beerStyles(list))
+    }
 }

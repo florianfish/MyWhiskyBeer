@@ -43,7 +43,7 @@ data class ProductForm(
             country = country.ifBlank { guess.country.orEmpty() },
             region = region.ifBlank { guess.region.orEmpty() },
             abv = abv.ifBlank { guess.abv?.let(::formatDecimal).orEmpty() },
-            style = style.ifBlank { guess.style.orEmpty() },
+            style = style.ifBlank { BeerStyles.canonical(guess.style).orEmpty() },
             category = category.ifBlank { guess.category.orEmpty() },
             age = age.ifBlank { guess.age?.toString().orEmpty() },
             caskType = caskType.ifBlank { guess.caskType.orEmpty() },

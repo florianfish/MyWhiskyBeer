@@ -59,6 +59,16 @@ abstract class TastingDao {
     )
     abstract fun observeLatestByType(type: ProductType, limit: Int = 20): Flow<List<TastingWithProduct>>
 
+    /** Dernières dégustations de bières d'un style (filtre par style de l'accueil). */
+    @Transaction
+    @Query(
+        """
+        SELECT t.* FROM tasting t JOIN beer_details b ON b.productId = t.productId
+        WHERE b.style = :style COLLATE NOCASE ORDER BY t.date DESC LIMIT :limit
+        """,
+    )
+    abstract fun observeLatestByBeerStyle(style: String, limit: Int = 20): Flow<List<TastingWithProduct>>
+
     @Transaction
     @Query("SELECT * FROM tasting WHERE productId = :productId ORDER BY date DESC")
     abstract fun observeForProduct(productId: Long): Flow<List<TastingWithProduct>>

@@ -1,11 +1,13 @@
 package fr.florianfish.mywhiskybeer.data.local
 
+import fr.florianfish.mywhiskybeer.data.local.dao.BeerStyleDao
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
 import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.local.entity.WhiskyDetailsEntity
+import fr.florianfish.mywhiskybeer.domain.BeerStyles
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.domain.blankToNull
 import fr.florianfish.mywhiskybeer.domain.toDecimalOrNull
@@ -14,8 +16,10 @@ import javax.inject.Inject
 /** Crée un produit (tronc commun + détails du type) à partir du formulaire. */
 class ProductWriter @Inject constructor(
     private val productDao: ProductDao,
+    private val beerStyleDao: BeerStyleDao,
 ) {
     suspend fun insert(form: ProductForm, photoPath: String?): Long {
+        addStyle(form)
         val product = ProductEntity(
             type = form.type,
             name = form.name.trim(),
@@ -31,7 +35,7 @@ class ProductWriter @Inject constructor(
                 product,
                 BeerDetailsEntity(
                     productId = 0,
-                    style = form.style.blankToNull(),
+                    style = BeerStyles.canonical(form.style), // ramené au style de la liste si possible
                     ibu = form.ibu.trim().toIntOrNull(),
                     color = form.color.blankToNull(),
                 ),
@@ -55,6 +59,7 @@ class ProductWriter @Inject constructor(
      * de détail absents du formulaire (millésime, ppm, embouteilleur…) sont conservés.
      */
     suspend fun update(existing: ProductWithDetails, form: ProductForm, photoPath: String?) {
+        if (existing.product.type == ProductType.BEER) addStyle(form)
         val p = existing.product
         productDao.updateProduct(
             p.copy(
@@ -70,7 +75,7 @@ class ProductWriter @Inject constructor(
         when (p.type) {
             ProductType.BEER -> productDao.upsertBeerDetails(
                 (existing.beer ?: BeerDetailsEntity(productId = p.id)).copy(
-                    style = form.style.blankToNull(),
+                    style = BeerStyles.canonical(form.style), // ramené au style de la liste si possible
                     ibu = form.ibu.trim().toIntOrNull(),
                     color = form.color.blankToNull(),
                 ),
@@ -99,5 +104,10 @@ class ProductWriter @Inject constructor(
         if (product.photoPath == null && photoPath != null) {
             productDao.updateProduct(product.copy(photoPath = photoPath))
         }
+    }
+
+    /** Un style saisi librement rejoint la liste des styles (Réglages). */
+    private suspend fun addStyle(form: ProductForm) {
+        if (form.type == ProductType.BEER) BeerStyles.canonical(form.style)?.let { beerStyleDao.add(it) }
     }
 }

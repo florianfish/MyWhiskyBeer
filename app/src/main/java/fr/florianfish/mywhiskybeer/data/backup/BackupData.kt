@@ -1,12 +1,14 @@
 package fr.florianfish.mywhiskybeer.data.backup
 
 import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
+import fr.florianfish.mywhiskybeer.data.local.entity.BeerStyleEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarItemEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.CellarStatus
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.WhiskyDetailsEntity
+import fr.florianfish.mywhiskybeer.domain.BeerStyles
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -27,9 +29,12 @@ data class BackupData(
     /** Arômes repérés par type/famille/nom : les identifiants du référentiel peuvent changer d'une installation à l'autre. */
     val aromas: List<AromaRef>,
     val cellar: List<CellarItemEntity>,
+    /** Liste des styles de bière (format 2) ; vide dans une sauvegarde plus ancienne. */
+    val beerStyles: List<BeerStyleEntity> = emptyList(),
 ) {
     companion object {
-        const val FORMAT = 1
+        /** 2 : liste des styles de bière. */
+        const val FORMAT = 2
     }
 }
 
@@ -82,6 +87,20 @@ object BackupCodec {
         products = data.products.map { p -> p.copy(photoPath = p.photoPath?.let(transform)) },
         tastings = data.tastings.map { t -> t.copy(photoPath = t.photoPath?.let(transform)) },
     )
+
+    /**
+     * Styles à restaurer : ceux de la sauvegarde (liste par défaut si elle n'en a pas),
+     * complétés par les styles utilisés par ses bières.
+     */
+    fun beerStyles(data: BackupData): List<BeerStyleEntity> {
+        val list = data.beerStyles.ifEmpty { BeerStyles.ALL.mapIndexed { i, s -> BeerStyleEntity(s, i) } }
+        val known = list.map { it.name.lowercase() }.toMutableSet()
+        var next = (list.maxOfOrNull { it.position } ?: -1) + 1
+        val missing = data.beerDetails.mapNotNull { it.style?.trim()?.takeIf(String::isNotEmpty) }
+            .filter { known.add(it.lowercase()) }
+            .map { BeerStyleEntity(it, next++) }
+        return list + missing
+    }
 
     fun summary(data: BackupData) = BackupSummary(
         products = data.products.size,

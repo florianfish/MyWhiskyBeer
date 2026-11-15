@@ -33,6 +33,7 @@ import androidx.navigation.toRoute
 import fr.florianfish.mywhiskybeer.ui.bottle.BottleEditScreen
 import fr.florianfish.mywhiskybeer.ui.cellar.CellarScreen
 import fr.florianfish.mywhiskybeer.ui.home.HomeScreen
+import fr.florianfish.mywhiskybeer.ui.navigation.BeerStylesRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.BottleEditRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.CellarRoute
 import fr.florianfish.mywhiskybeer.ui.navigation.HomeRoute
@@ -44,6 +45,7 @@ import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import fr.florianfish.mywhiskybeer.ui.product.ProductDetailScreen
 import fr.florianfish.mywhiskybeer.ui.product.ProductEditScreen
 import fr.florianfish.mywhiskybeer.ui.products.ProductsScreen
+import fr.florianfish.mywhiskybeer.ui.styles.BeerStylesScreen
 import fr.florianfish.mywhiskybeer.ui.settings.SettingsScreen
 import fr.florianfish.mywhiskybeer.ui.tasting.TastingEditScreen
 import fr.florianfish.mywhiskybeer.ui.navigation.StatsRoute
@@ -175,7 +177,13 @@ fun MyWhiskyBeerAppUi() {
                 ProductEditScreen(onClose = { navController.popBackStack() })
             }
             composable<SettingsRoute> {
-                SettingsScreen(onBack = { navController.popBackStack() })
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onBeerStyles = { navController.navigate(BeerStylesRoute) },
+                )
+            }
+            composable<BeerStylesRoute> {
+                BeerStylesScreen(onBack = { navController.popBackStack() })
             }
             composable<BottleEditRoute> {
                 BottleEditScreen(onClose = { navController.popBackStack() })
