@@ -16,3 +16,4 @@ jobs:
     with:
       apk-name: MyWhiskyBeer
       gradle-tasks: assembleDebug testDebugUnitTest
+    secrets: inherit
