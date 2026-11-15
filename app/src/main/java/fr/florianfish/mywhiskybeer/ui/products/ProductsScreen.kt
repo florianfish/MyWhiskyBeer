@@ -21,7 +21,6 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -49,6 +48,7 @@ import fr.florianfish.mywhiskybeer.domain.RatingScale
 import fr.florianfish.mywhiskybeer.ui.components.EmptyState
 import fr.florianfish.mywhiskybeer.ui.components.GlassGauge
 import fr.florianfish.mywhiskybeer.ui.components.TypeBadge
+import fr.florianfish.mywhiskybeer.ui.components.TypeFilterChips
 import fr.florianfish.mywhiskybeer.ui.theme.accent
 
 @Composable
@@ -90,17 +90,7 @@ fun ProductsScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FilterChip(selected = filter == null, onClick = { viewModel.setFilter(null) }, label = { Text("Tout") })
-            FilterChip(
-                selected = filter == ProductType.WHISKY,
-                onClick = { viewModel.setFilter(ProductType.WHISKY) },
-                label = { Text("Whisky") },
-            )
-            FilterChip(
-                selected = filter == ProductType.BEER,
-                onClick = { viewModel.setFilter(ProductType.BEER) },
-                label = { Text("Bière") },
-            )
+            TypeFilterChips(filter, viewModel::setFilter)
             Spacer(Modifier.weight(1f))
             SortMenu(sort, onSort = viewModel::setSort)
         }

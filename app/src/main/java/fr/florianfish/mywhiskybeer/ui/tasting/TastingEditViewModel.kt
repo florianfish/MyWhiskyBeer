@@ -13,6 +13,7 @@ import fr.florianfish.mywhiskybeer.data.local.dao.AromaDao
 import fr.florianfish.mywhiskybeer.data.local.dao.ProductDao
 import fr.florianfish.mywhiskybeer.data.local.dao.TastingDao
 import fr.florianfish.mywhiskybeer.data.local.entity.AromaEntity
+import fr.florianfish.mywhiskybeer.data.local.entity.ProducerInfo
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.data.local.entity.TastingEntity
@@ -22,6 +23,7 @@ import fr.florianfish.mywhiskybeer.data.barcode.message
 import fr.florianfish.mywhiskybeer.data.ocr.LabelScanner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoCleaner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
+import fr.florianfish.mywhiskybeer.domain.ProducerSuggestions
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.domain.blankToNull
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -113,6 +116,15 @@ class TastingEditViewModel @Inject constructor(
         .flatMapLatest { query -> if (query.length < 2) flowOf(emptyList()) else productDao.search(query) }
         .map { it.take(5) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Distilleries / brasseries déjà connues qui correspondent au producteur saisi. */
+    val producerSuggestions: StateFlow<List<ProducerInfo>> = combine(
+        productDao.observeProducerInfos(),
+        _state.map { it.product.type to it.product.producer }.distinctUntilChanged(),
+    ) { known, (type, typed) -> ProducerSuggestions.match(known, type, typed) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun pickProducer(info: ProducerInfo) = updateProduct { it.withProducer(info) }
 
     private val _saved = Channel<Long>(Channel.BUFFERED)
     /** Émet l'id du produit une fois la dégustation enregistrée. */

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.QrCodeScanner
@@ -48,6 +49,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -73,6 +75,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import fr.florianfish.mywhiskybeer.data.local.entity.PeatLevel
+import fr.florianfish.mywhiskybeer.data.local.entity.ProducerInfo
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 import fr.florianfish.mywhiskybeer.domain.ProductForm
@@ -113,6 +116,8 @@ fun ProductFormSection(
     onSuggestionClick: (ProductWithDetails) -> Unit,
     barcodeBusy: Boolean,
     onBarcode: (String) -> Unit,
+    producerSuggestions: List<ProducerInfo> = emptyList(),
+    onProducerPick: (ProducerInfo) -> Unit = {},
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
@@ -204,12 +209,7 @@ fun ProductFormSection(
                 }
             }
         }
-        FormTextField(
-            value = form.producer,
-            onValueChange = { v -> onFormChange { it.copy(producer = v) } },
-            label = if (form.type == ProductType.BEER) "Brasserie" else "Distillerie",
-            capitalization = KeyboardCapitalization.Words,
-        )
+        ProducerField(form, producerSuggestions, onFormChange, onProducerPick)
 
         Row(
             Modifier
@@ -413,4 +413,43 @@ private fun startBarcodeScan(context: Context, onBarcode: (String) -> Unit, onEr
     GmsBarcodeScanning.getClient(context, options).startScan()
         .addOnSuccessListener { barcode -> barcode.rawValue?.takeIf { it.isNotBlank() }?.let(onBarcode) }
         .addOnFailureListener { onError("Scanner indisponible (services Google Play) : ${it.message ?: "erreur inconnue"}") }
+}
+
+/**
+ * Champ « Distillerie » / « Brasserie » avec les producteurs déjà connus du carnet en suggestions :
+ * un appui remplit le nom exact, et le pays et la région s'ils sont vides.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ProducerField(
+    form: ProductForm,
+    suggestions: List<ProducerInfo>,
+    onFormChange: ((ProductForm) -> ProductForm) -> Unit,
+    onPick: (ProducerInfo) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FormTextField(
+            value = form.producer,
+            onValueChange = { v -> onFormChange { it.copy(producer = v) } },
+            label = if (form.type == ProductType.BEER) "Brasserie" else "Distillerie",
+            capitalization = KeyboardCapitalization.Words,
+        )
+        if (suggestions.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                suggestions.forEach { info ->
+                    SuggestionChip(
+                        onClick = { onPick(info) },
+                        icon = { Icon(Icons.Outlined.History, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                        label = {
+                            Text(
+                                listOfNotNull(info.producer, info.region ?: info.country).joinToString(" · "),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
+                    )
+                }
+            }
+        }
+    }
 }

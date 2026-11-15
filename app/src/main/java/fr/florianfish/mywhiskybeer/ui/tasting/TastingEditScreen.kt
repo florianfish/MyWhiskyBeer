@@ -56,6 +56,7 @@ fun TastingEditScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val aromas by viewModel.aromas.collectAsStateWithLifecycle()
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
+    val producerSuggestions by viewModel.producerSuggestions.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.saved.collect { onSaved(it) }
@@ -101,6 +102,8 @@ fun TastingEditScreen(
                     onSuggestionClick = viewModel::selectExisting,
                     barcodeBusy = state.barcodeBusy,
                     onBarcode = viewModel::onBarcodeScanned,
+                    producerSuggestions = producerSuggestions,
+                    onProducerPick = viewModel::pickProducer,
                 )
             }
             state.barcodeMessage?.let {

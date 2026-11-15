@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import fr.florianfish.mywhiskybeer.data.local.entity.BeerDetailsEntity
+import fr.florianfish.mywhiskybeer.data.local.entity.ProducerInfo
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductEntity
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductSummary
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
@@ -83,15 +84,15 @@ abstract class ProductDao {
     @Query("SELECT * FROM product WHERE barcode = :barcode LIMIT 1")
     abstract suspend fun findByBarcode(barcode: String): ProductEntity?
 
-    /** Pour l'autocomplétion des producteurs déjà saisis. */
+    /** Producteurs déjà saisis avec pays et région, du produit le plus récent au plus ancien (suggestions). */
     @Query(
         """
-        SELECT DISTINCT producer FROM product
-        WHERE type = :type AND producer IS NOT NULL
-        ORDER BY producer COLLATE NOCASE
+        SELECT producer, type, country, region FROM product
+        WHERE producer IS NOT NULL AND producer != ''
+        ORDER BY created_at DESC
         """,
     )
-    abstract fun observeProducers(type: ProductType): Flow<List<String>>
+    abstract fun observeProducerInfos(): Flow<List<ProducerInfo>>
 
     @Query("SELECT COUNT(*) FROM product WHERE photoPath = :path")
     abstract suspend fun countPhotoUses(path: String): Int

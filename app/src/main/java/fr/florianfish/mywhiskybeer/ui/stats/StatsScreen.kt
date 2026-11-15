@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +42,7 @@ import fr.florianfish.mywhiskybeer.ui.components.AromaTag
 import fr.florianfish.mywhiskybeer.ui.components.EmptyState
 import fr.florianfish.mywhiskybeer.ui.components.GlassGauge
 import fr.florianfish.mywhiskybeer.ui.components.TypeBadge
+import fr.florianfish.mywhiskybeer.ui.components.TypeFilterChips
 import fr.florianfish.mywhiskybeer.ui.theme.RatingTextStyle
 import fr.florianfish.mywhiskybeer.ui.theme.accent
 
@@ -60,9 +60,7 @@ fun StatsScreen(
 
     Column(modifier.fillMaxSize()) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(selected = type == null, onClick = { viewModel.setType(null) }, label = { Text("Tout") })
-            FilterChip(selected = type == ProductType.WHISKY, onClick = { viewModel.setType(ProductType.WHISKY) }, label = { Text("Whisky") })
-            FilterChip(selected = type == ProductType.BEER, onClick = { viewModel.setType(ProductType.BEER) }, label = { Text("Bière") })
+            TypeFilterChips(type, viewModel::setType)
         }
         when {
             state.loading -> Unit

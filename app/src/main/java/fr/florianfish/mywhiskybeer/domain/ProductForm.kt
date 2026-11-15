@@ -1,6 +1,7 @@
 package fr.florianfish.mywhiskybeer.domain
 
 import fr.florianfish.mywhiskybeer.data.local.entity.PeatLevel
+import fr.florianfish.mywhiskybeer.data.local.entity.ProducerInfo
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductWithDetails
 
@@ -49,6 +50,13 @@ data class ProductForm(
             caskStrength = caskStrength || guess.caskStrength,
         )
     }
+
+    /** Choix d'un producteur suggéré : nom exact, et pays / région s'ils sont encore vides. */
+    fun withProducer(info: ProducerInfo): ProductForm = copy(
+        producer = info.producer,
+        country = country.ifBlank { info.country.orEmpty() },
+        region = region.ifBlank { info.region.orEmpty() },
+    )
 
     /** Vrai si l'étiquette a rempli des champs de « Plus de détails » (pour les déplier). */
     fun hasDetails(): Boolean =

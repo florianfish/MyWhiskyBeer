@@ -105,3 +105,11 @@ data class ProductSummary(
     val lastTasted: Long?,
     val tastingCount: Int,
 )
+
+/** Un producteur (distillerie, brasserie) déjà présent dans le carnet, avec l'origine connue. */
+data class ProducerInfo(
+    val producer: String,
+    val type: ProductType,
+    val country: String?,
+    val region: String?,
+)
