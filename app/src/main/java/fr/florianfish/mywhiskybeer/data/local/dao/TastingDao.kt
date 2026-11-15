@@ -74,6 +74,10 @@ abstract class TastingDao {
     @Query("SELECT AVG(rating) FROM tasting WHERE productId = :productId")
     abstract fun observeAverageRating(productId: Long): Flow<Double?>
 
+    /** Lieux déjà utilisés, du plus récent au plus ancien (suggestions du champ « Lieu »). */
+    @Query("SELECT place FROM tasting WHERE place IS NOT NULL AND place != '' GROUP BY place ORDER BY MAX(date) DESC")
+    abstract fun observePlaces(): Flow<List<String>>
+
     /** Dernier lieu utilisé, pour pré-remplir la saisie. */
     @Query("SELECT place FROM tasting WHERE place IS NOT NULL ORDER BY date DESC LIMIT 1")
     abstract suspend fun lastPlace(): String?

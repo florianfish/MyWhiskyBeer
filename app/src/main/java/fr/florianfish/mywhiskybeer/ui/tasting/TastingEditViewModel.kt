@@ -22,10 +22,14 @@ import fr.florianfish.mywhiskybeer.data.barcode.BarcodeResult
 import fr.florianfish.mywhiskybeer.data.barcode.message
 import fr.florianfish.mywhiskybeer.data.ocr.LabelScanner
 import fr.florianfish.mywhiskybeer.data.photo.PhotoCleaner
+import fr.florianfish.mywhiskybeer.data.place.CitySearch
 import fr.florianfish.mywhiskybeer.data.photo.PhotoStore
 import fr.florianfish.mywhiskybeer.domain.ProducerSuggestions
 import fr.florianfish.mywhiskybeer.domain.ProductForm
 import fr.florianfish.mywhiskybeer.domain.blankToNull
+// Suggestions du lieu
+import fr.florianfish.mywhiskybeer.domain.LabelParser
+import fr.florianfish.mywhiskybeer.domain.PlaceSuggestions
 import fr.florianfish.mywhiskybeer.ui.navigation.TastingEditRoute
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -39,6 +43,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -95,6 +100,7 @@ class TastingEditViewModel @Inject constructor(
     private val labelScanner: LabelScanner,
     private val barcodeLookup: BarcodeLookup,
     private val photoCleaner: PhotoCleaner,
+    private val citySearch: CitySearch,
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<TastingEditRoute>()
@@ -106,6 +112,31 @@ class TastingEditViewModel @Inject constructor(
         .map { it.type }
         .distinctUntilChanged()
         .flatMapLatest { aromaDao.observeByType(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /**
+     * Suggestions du champ « Lieu » : lieux déjà utilisés (hors-ligne, tout de suite), puis villes
+     * trouvées en ligne. Pas de requête si le lieu saisi est déjà connu tel quel.
+     */
+    val placeSuggestions: StateFlow<List<String>> = _state
+        .map { it.tasting.place }
+        .distinctUntilChanged()
+        .debounce(400)
+        .combine(tastingDao.observePlaces()) { typed, past -> typed to past }
+        .flatMapLatest { (typed, past) ->
+            flow {
+                val query = LabelParser.fold(typed).trim()
+                if (query.isEmpty() || past.any { LabelParser.fold(it).trim() == query }) {
+                    emit(emptyList())
+                    return@flow
+                }
+                val local = PlaceSuggestions.matchPast(past, typed)
+                emit(PlaceSuggestions.merge(typed, local, emptyList()))
+                if (query.length >= PlaceSuggestions.ONLINE_MIN_LENGTH) {
+                    emit(PlaceSuggestions.merge(typed, local, citySearch.search(typed)))
+                }
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** Produits existants qui correspondent au nom saisi, pour éviter les doublons. */
