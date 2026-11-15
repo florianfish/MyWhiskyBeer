@@ -102,8 +102,10 @@ class BackupManager @Inject constructor(
         try {
             val portable = readArchive(source, staging)
             val photosDir = photoStore.photosDir
+            // Les chemins de photo du JSON sont vérifiés comme les entrées du zip : un nom avec « ../ »
+            // pointerait hors du dossier des photos
             val data = BackupCodec.mapPhotos(portable) { name ->
-                if (File(staging, name).isFile) File(photosDir, name).absolutePath else null
+                if (BackupCodec.isSafePhotoName(name) && File(staging, name).isFile) File(photosDir, name).absolutePath else null
             }
 
             db.withTransaction {
