@@ -89,7 +89,8 @@ fun RatingTrendChart(
         ) {
             val left = 36.dp.toPx()
             val right = 12.dp.toPx()
-            val top = 12.dp.toPx()
+            // Marge haute : place pour l'étiquette d'un point à la note maximale, sans chevaucher la grille
+            val top = 24.dp.toPx()
             val bottom = 22.dp.toPx()
             val w = size.width - left - right
             val h = size.height - top - bottom
@@ -134,7 +135,7 @@ fun RatingTrendChart(
             val active = points[activeIndex]
             val valueLayout = measurer.measure(format(active.avgRating), TextStyle(color = ink, fontSize = 11.sp))
             val vx = (x(activeIndex) - valueLayout.size.width / 2f).coerceIn(left, size.width - valueLayout.size.width)
-            val vy = (y(active.avgRating) - valueLayout.size.height - 8.dp.toPx()).coerceAtLeast(0f)
+            val vy = (y(active.avgRating) - valueLayout.size.height - 6.dp.toPx()).coerceAtLeast(0f)
             drawText(valueLayout, topLeft = Offset(vx, vy))
         }
     }

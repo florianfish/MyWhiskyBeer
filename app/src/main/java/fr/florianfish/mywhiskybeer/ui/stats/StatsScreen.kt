@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductSummary
@@ -133,20 +134,25 @@ private fun StatsContent(report: StatsReport, type: ProductType?, accent: Color,
 /** Chiffres clés en tuiles : la valeur est le message, pas besoin de graphique. */
 @Composable
 private fun Summary(report: StatsReport, format: (Int) -> String) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Tile("Dégustations", report.tastingCount.toString(), Modifier.weight(1f))
-        Tile("Produits", report.productCount.toString(), Modifier.weight(1f))
-        Tile("Pays", report.countryCount.toString(), Modifier.weight(1f))
-        Tile("Moyenne", report.avgRating?.let(format) ?: "—", Modifier.weight(1.3f))
+    // 2 × 2 : sur une seule ligne, « Dégustations » était tronqué sur un téléphone courant
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Tile("Dégustations", report.tastingCount.toString(), Modifier.weight(1f))
+            Tile("Moyenne", report.avgRating?.let(format) ?: "—", Modifier.weight(1f))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Tile("Produits", report.productCount.toString(), Modifier.weight(1f))
+            Tile("Pays", report.countryCount.toString(), Modifier.weight(1f))
+        }
     }
 }
 
 @Composable
 private fun Tile(label: String, value: String, modifier: Modifier) {
     Card(modifier, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
-        Column(Modifier.padding(vertical = 12.dp, horizontal = 10.dp)) {
+        Column(Modifier.padding(vertical = 12.dp, horizontal = 16.dp)) {
             Text(value, style = RatingTextStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
         }
     }
 }
@@ -155,7 +161,8 @@ private fun Tile(label: String, value: String, modifier: Modifier) {
 private fun StatsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, style = MaterialTheme.typography.titleLarge)
+            // Titre de carte un cran sous le titre d'écran (serif, mais plus petit)
+            Text(title, style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp))
             content()
         }
     }
@@ -193,7 +200,12 @@ private fun TopRow(rank: Int, item: ProductSummary, onClick: (Long) -> Unit) {
             }
         }
         GlassGauge(rating, p.type, size = 28.dp)
-        Text(RatingScale.format(rating, p.type), style = MaterialTheme.typography.titleSmall, modifier = Modifier.width(56.dp))
+        Text(
+            RatingScale.format(rating, p.type),
+            style = MaterialTheme.typography.titleSmall,
+            color = p.type.accent(),
+            modifier = Modifier.width(56.dp),
+        )
     }
 }
 

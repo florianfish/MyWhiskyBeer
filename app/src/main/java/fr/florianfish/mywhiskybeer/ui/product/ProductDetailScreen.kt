@@ -34,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -332,6 +333,11 @@ private fun CellarBlock(
                     onValueChangeFinished = { onFillLevel(level.toInt()) },
                     valueRange = 0f..100f,
                     steps = 19,
+                    // Crans de 5 % conservés, mais sans les 19 points de graduation (trop chargé)
+                    colors = SliderDefaults.colors(
+                        activeTickColor = Color.Transparent,
+                        inactiveTickColor = Color.Transparent,
+                    ),
                     modifier = Modifier.weight(1f),
                 )
                 Text("${level.toInt()} %", style = MaterialTheme.typography.labelLarge)
@@ -342,7 +348,8 @@ private fun CellarBlock(
 
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {
-    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    // Marge haute : chaque section se détache du bloc précédent
+    Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(title, style = MaterialTheme.typography.titleLarge)
         content()
     }

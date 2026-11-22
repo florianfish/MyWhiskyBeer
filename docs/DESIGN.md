@@ -11,8 +11,16 @@ L'ambiance d'un bar à whisky ou d'une cave : sombre, chaude, avec deux accents 
 | **Whisky** (primary) | `#E0A458` ambre | `#9A5418` |
 | **Bière** (secondary) | `#E8C468` paille | `#7A5E00` |
 | Accent ponctuel (tertiary) | `#C9704A` cuivre | `#9C4A26` |
+| Sélection (secondaryContainer) | `#45342A` cuir | `#E9D6BF` |
+| Liquide des jauges | = accent | whisky `#C77A2E`, bière `#D9A62A` |
 
-Chaque élément lié à un produit prend la couleur de son type : liseré des cartes, badge, jauge, note.
+Chaque élément lié à un produit prend la couleur de son type ; **à l'inverse, un élément qui ne concerne pas un type n'en prend pas la couleur**. Material emploie `secondaryContainer` pour toute sélection (onglet actif, filtre, bouton tonal, bouton segmenté) : il est donc en cuir neutre et non en paille, sinon « Tout » sélectionné aurait l'air de signifier « Bière ».
+
+Tous les rôles Material sont définis dans les deux schémas : un rôle oublié retombe sur la palette violette par défaut.
+
+En mode clair, les accents foncés sont faits pour le texte ; les jauges (verre, bouteille) prennent un liquide plus lumineux (`ProductType.liquid()`), sinon la bière paraît kaki. La mousse est toujours crème.
+
+Liseré des cartes, badge, jauge, note : couleur du type.
 Le mode sombre est le mode naturel de l'appli (on note souvent le soir) ; le mode clair suit le système.
 
 ## Typographie

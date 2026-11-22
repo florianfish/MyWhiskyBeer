@@ -7,7 +7,6 @@ import fr.florianfish.mywhiskybeer.ui.components.BottleGauge
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -42,6 +41,8 @@ import fr.florianfish.mywhiskybeer.domain.formatDecimal
 import fr.florianfish.mywhiskybeer.ui.components.EmptyState
 import fr.florianfish.mywhiskybeer.ui.components.TypeBadge
 import fr.florianfish.mywhiskybeer.ui.theme.accent
+import fr.florianfish.mywhiskybeer.ui.theme.liquid
+import androidx.compose.foundation.layout.width
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,7 +123,6 @@ private fun StockSummary(list: List<CellarItemWithProduct>) {
     val almostEmpty = list.count { it.isAlmostEmpty() }
     Row(
         Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -135,7 +135,7 @@ private fun StockSummary(list: List<CellarItemWithProduct>) {
         )
         if (almostEmpty > 0) {
             Text(
-                "· " + if (almostEmpty > 1) "$almostEmpty presque finies" else "1 presque finie",
+                " · " + if (almostEmpty > 1) "$almostEmpty presque finies" else "1 presque finie",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.tertiary,
             )
@@ -181,10 +181,11 @@ private fun CellarRow(entry: CellarItemWithProduct, showType: Boolean, onClick: 
             CellarStatus.IN_STOCK, CellarStatus.OPENED -> {{
                 // Niveau de la bouteille : pleine si fermée
                 val level = if (item.status == CellarStatus.IN_STOCK) 100 else item.fillLevel
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Largeur fixe : les bouteilles restent alignées, avec ou sans pourcentage
+                Column(Modifier.width(48.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     BottleGauge(
                         level = level ?: 100,
-                        color = if (entry.isAlmostEmpty()) MaterialTheme.colorScheme.tertiary else accent,
+                        color = if (entry.isAlmostEmpty()) MaterialTheme.colorScheme.tertiary else p.type.liquid(),
                         height = 40.dp,
                     )
                     if (item.status == CellarStatus.OPENED && level != null) {

@@ -48,7 +48,8 @@ fun ProductThumb(photoPath: String?, type: ProductType, modifier: Modifier = Mod
                 ProductType.WHISKY -> Canvas(Modifier.size(width = size * 0.3f, height = size * 0.66f)) {
                     drawPath(bottlePath(this.size), color, style = Stroke(width = this.size.width * 0.1f))
                 }
-                ProductType.BEER -> GlassGauge(rating = 0, type = type, size = size * 0.6f, modifier = Modifier.padding(2.dp))
+                // Même teinte que la bouteille : le verre vide n'est pas dessiné à l'encre
+                ProductType.BEER -> GlassGauge(rating = 0, type = type, size = size * 0.6f, outline = color, modifier = Modifier.padding(2.dp))
             }
         }
     }
