@@ -18,6 +18,9 @@ val Straw = Color(0xFFE8C468)           // bière
 val OnStraw = Color(0xFF2B2000)
 val Copper = Color(0xFFC9704A)          // accents ponctuels (alambic)
 val OnCopper = Color(0xFF2B0E02)
+// Cuir : sélection neutre (onglet actif, filtre, bouton tonal), sans évoquer un type
+val Leather = Color(0xFF45342A)
+val OnLeather = Color(0xFFF6DCC0)
 
 // Mode clair
 val Paper = Color(0xFFFAF4EA)
@@ -28,6 +31,14 @@ val InkMuted = Color(0xFF6B5A4A)
 val AmberDeep = Color(0xFF9A5418)
 val StrawDeep = Color(0xFF7A5E00)
 val CopperDeep = Color(0xFF9C4A26)
+val LeatherLight = Color(0xFFE9D6BF)
+val OnLeatherLight = Color(0xFF2E1F14)
+
+// Liquides des jauges (verre, bouteille) en mode clair : les accents foncés, faits pour
+// le texte, donnent un liquide terne (bière kaki). En sombre, liquide = accent.
+val AmberLiquid = Color(0xFFC77A2E)
+val StrawLiquid = Color(0xFFD9A62A)
+val Foam = Color(0xFFFFF6E3)            // mousse : toujours crème, jamais encre
 
 val ErrorDark = Color(0xFFFFB4AB)
 val ErrorLight = Color(0xFFBA1A1A)

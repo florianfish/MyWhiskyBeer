@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import fr.florianfish.mywhiskybeer.data.local.entity.ProductType
-import fr.florianfish.mywhiskybeer.ui.theme.accent
+import androidx.compose.ui.graphics.Color
+import fr.florianfish.mywhiskybeer.ui.theme.Foam
+import fr.florianfish.mywhiskybeer.ui.theme.liquid
 
 /**
  * Jauge de note en forme de verre qui se remplit (0..100).
@@ -33,15 +35,18 @@ fun GlassGauge(
     size: Dp = 40.dp,
     /** false pendant un glisser du doigt : le verre suit sans retard. */
     animate: Boolean = true,
+    /** Contour du verre ; par défaut la couleur du texte. */
+    outline: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
 ) {
     val level by animateFloatAsState(
         targetValue = rating.coerceIn(0, 100) / 100f,
         animationSpec = if (animate) tween(durationMillis = 600) else snap(),
         label = "glassLevel",
     )
-    val liquid = type.accent()
-    val glass = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
-    val foam = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+    val liquid = type.liquid()
+    val glass = outline
+    // Mousse crème dans les deux modes (en onSurface, elle était noire en mode clair)
+    val foam = Foam
 
     Canvas(modifier.size(width = size * 0.8f, height = size)) {
         val w = this.size.width
